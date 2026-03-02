@@ -75,5 +75,79 @@ namespace CryptoTool.Controllers
         }
 
       
+        [HttpPost]
+        public IActionResult EncryptFile(IFormFile file, string key, string iv, string mode, string padding)
+        {
+            if (file == null || file.Length == 0)
+            {
+                ViewBag.Error = "Selecteer alstublieft een bestand.";
+                return View("Index");
+            }
+
+            try
+            {
+                CipherMode cipherMode = Enum.Parse<CipherMode>(mode);
+                PaddingMode paddingMode = Enum.Parse<PaddingMode>(padding);
+
+                // Lees het bestand in een byte-array
+                byte[] fileBytes;
+                using (var ms = new MemoryStream())
+                {
+                    file.CopyTo(ms);
+                    fileBytes = ms.ToArray();
+                }
+
+               
+                byte[] encryptedBytes = _encryptionService.EncryptFile(fileBytes, key, iv, cipherMode, paddingMode);
+
+                // Download het versleutelde bestand (voeg .enc toe aan de naam)
+                string fileName = file.FileName + ".enc";
+                return File(encryptedBytes, "application/octet-stream", fileName);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Fout bij bestand versleuteling: " + ex.Message;
+                return View("Index");
+            }
+        }
+
+       
+        [HttpPost]
+        public IActionResult DecryptFile(IFormFile file, string key, string iv, string mode, string padding)
+        {
+            if (file == null || file.Length == 0)
+            {
+                ViewBag.Error = "Selecteer alstublieft een bestand.";
+                return View("Index");
+            }
+
+            try
+            {
+                CipherMode cipherMode = Enum.Parse<CipherMode>(mode);
+                PaddingMode paddingMode = Enum.Parse<PaddingMode>(padding);
+
+                byte[] fileBytes;
+                using (var ms = new MemoryStream())
+                {
+                    file.CopyTo(ms);
+                    fileBytes = ms.ToArray();
+                }
+
+                // Ontsleutel het bestand
+                byte[] decryptedBytes = _encryptionService.DecryptFile(fileBytes, key, iv, cipherMode, paddingMode);
+
+                // Verwijder de .enc extensie als die bestaat
+                string fileName = file.FileName.Replace(".enc", "");
+                // Als er geen .enc was, voeg .decrypted toe om overschrijven te voorkomen
+                if (fileName == file.FileName) fileName = "decrypted_" + file.FileName;
+
+                return File(decryptedBytes, "application/octet-stream", fileName);
+            }
+            catch (Exception )
+            {
+                ViewBag.Error = "Fout bij bestand ontsleuteling. Controleer de sleutel!";
+                return View("Index");
+            }
+        }
     }
 }

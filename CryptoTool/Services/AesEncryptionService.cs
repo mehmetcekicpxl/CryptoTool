@@ -80,6 +80,54 @@ namespace CryptoTool.Services
                 }
             }
         }
-        
+        // Versleutelt een bestand (byte array) en retourneert de versleutelde bytes.
+        public byte[] EncryptFile(byte[] fileBytes, string keyBase64, string ivBase64, CipherMode mode, PaddingMode padding)
+        {
+            byte[] key = Convert.FromBase64String(keyBase64);
+            byte[] iv = Convert.FromBase64String(ivBase64);
+
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = key;
+                if (mode != CipherMode.ECB) aes.IV = iv;
+                aes.Mode = mode;
+                aes.Padding = padding;
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(fileBytes, 0, fileBytes.Length);
+                        cs.FlushFinalBlock();
+                    }
+                    return ms.ToArray();
+                }
+            }
+        }
+
+        // Ontsleutelt een bestand (byte array) en retourneert de originele bytes.
+        public byte[] DecryptFile(byte[] fileBytes, string keyBase64, string ivBase64, CipherMode mode, PaddingMode padding)
+        {
+            byte[] key = Convert.FromBase64String(keyBase64);
+            byte[] iv = Convert.FromBase64String(ivBase64);
+
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = key;
+                if (mode != CipherMode.ECB) aes.IV = iv;
+                aes.Mode = mode;
+                aes.Padding = padding;
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(fileBytes, 0, fileBytes.Length);
+                        cs.FlushFinalBlock();
+                    }
+                    return ms.ToArray();
+                }
+            }
+        }
     }
 }

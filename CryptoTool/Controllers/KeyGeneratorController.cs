@@ -69,5 +69,26 @@ namespace CryptoTool.Controllers
 
             return View("Index");
         }
+       
+        [HttpPost]
+        public IActionResult DownloadRsaPublicKey(string publicKey)
+        {
+            if (string.IsNullOrEmpty(publicKey)) return RedirectToAction("Index");
+
+            var bytes = Encoding.UTF8.GetBytes(publicKey);
+            var output = new MemoryStream(bytes);
+            return File(output, "application/x-pem-file", "public_key.pem");
+        }
+
+        
+        [HttpPost]
+        public IActionResult DownloadRsaPrivateKey(string privateKey)
+        {
+            if (string.IsNullOrEmpty(privateKey)) return RedirectToAction("Index");
+
+            var bytes = Encoding.UTF8.GetBytes(privateKey);
+            var output = new MemoryStream(bytes);
+            return File(output, "application/x-pem-file", "private_key.pem");
+        }
     }
 }

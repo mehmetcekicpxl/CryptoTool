@@ -1,0 +1,99 @@
+﻿@using Encryptie_H4.Models.RsaEncryption
+@model KeyAndMessage
+@*
+
+*@
+@{
+}
+
+<head>
+    <script src="~/js/CopyFromTextArea.js" defer></script>
+</head>
+
+<div class="container mt-4">
+    <div class="row g-4">
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">Bericht Versleutelen</h2>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EncryptMessage" method="post">
+                        <div class="mb-3">
+                            <label asp-for="Message" class="form-label fw-bold">Te versleutelen bericht</label>
+                            <textarea asp-for="Message" class="form-control" rows="3" placeholder="Typ hier je bericht..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="PublicKey" class="form-label fw-bold">Publieke Sleutel (Public Key)</label>
+                            <textarea asp-for="PublicKey" class="form-control font-monospace" rows="4" placeholder="Plak de publieke sleutel hier..."></textarea>
+                        </div>
+
+                        @Html.Hidden("PrivateKey", "NA")
+                        @Html.Hidden("EncryptedMessage", "NA")
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">Versleutelen</button>
+                            <a asp-action="UploadKey" class="btn btn-outline-primary">Sleutel Uploaden</a>
+                        </div>
+                    </form>
+
+                    @if (Model.EncryptedMessage != "NA" && !string.IsNullOrEmpty(Model.EncryptedMessage))
+                    {
+                        <div class="mt-4 p-3 bg-light border rounded">
+                            <label class="form-label fw-bold text-primary small">Versleuteld Bericht:</label>
+                            <textarea id="encOut" class="form-control font-monospace mb-2" rows="3" readonly>@Model.EncryptedMessage</textarea>
+                            <button type="button" class="btn btn-sm btn-link p-0" onclick="copyAndDeselect('encOut')">Kopieer resultaat</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100 border-info">
+                <div class="card-header bg-info text-white">
+                    <h2 class="h5 mb-0">Bericht Ontsleutelen</h2>
+                </div>
+                <div class="card-body">
+                    <form asp-action="DecryptMessage" method="post">
+                        <div class="mb-3">
+                            <label asp-for="EncryptedMessage" class="form-label fw-bold">Versleuteld Bericht (Ciphertext)</label>
+                            <textarea asp-for="EncryptedMessage" class="form-control" rows="3" placeholder="Plak het versleutelde bericht..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="PrivateKey" class="form-label fw-bold">Privé Sleutel (Private Key)</label>
+                            <textarea asp-for="PrivateKey" class="form-control font-monospace" rows="4" placeholder="Plak de privé sleutel hier..."></textarea>
+                        </div>
+
+                        @Html.Hidden("PublicKey", "NA")
+                        @Html.Hidden("Message", "NA")
+
+                        <button type="submit" class="btn btn-info text-white w-100 shadow-sm">Ontsleutelen</button>
+                    </form>
+
+                    @if (ViewData.ModelState.IsValid && string.IsNullOrEmpty(Model.Message) == false)
+                    {
+                        <div class="mt-4 p-3  border rounded">
+                            <label class="form-label fw-bold small">Ontsleuteld Bericht:</label>
+                            <p class="mb-0 p-2 bg-white border rounded">@Model.Message</p>
+                        </div>
+                    }
+                    else if(string.IsNullOrEmpty(Model.Message) == false)
+                    {
+                        <div class="mt-4 p-3  border rounded">
+                            <label class="form-label fw-bold small">Ontsleuteld Bericht:</label>
+                            <p class="mb-0 p-2 bg-white border rounded">@Model.Message</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div asp-validation-summary="All" class="mt-4 alert alert-danger @(ViewData.ModelState.IsValid ? "d-none" : "")"></div>
+</div>
+
+
+
+

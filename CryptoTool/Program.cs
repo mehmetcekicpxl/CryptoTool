@@ -1,3 +1,7 @@
+using Encryptie_H4.Services;
+using Encryptie_H4.Services.RSARelated;
+using Encryptie_H4.Services.RSARelated.Interfaces;
+
 namespace CryptoTool
 {
     public class Program
@@ -9,7 +13,12 @@ namespace CryptoTool
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
+            builder.Services.AddSingleton<IHashingService, HashingService>();
+
             var app = builder.Build();
+
+
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())

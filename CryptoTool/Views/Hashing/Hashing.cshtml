@@ -1,0 +1,94 @@
+﻿@using Encryptie_H4.Models.Hashing
+@using System.Security.Authentication
+@model HashingModel
+
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<head>
+    <script src="~/js/CopyFromTextArea.js" defer></script>
+</head>
+
+<div class="container mt-4">
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">Hash Text</h2>
+                </div>
+                <div class="card-body">
+                    <form asp-action="HashText" method="post">
+                        <div class="mb-3">
+                            <label asp-for="Message" class="form-label fw-bold">Bericht</label>
+                            <textarea asp-for="Message" class="form-control border-primary" rows="4" placeholder="Enter bericht om te hashen"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="HashingType" class="form-label fw-bold">Hash type</label>
+                            <select asp-for="HashingType" class="form-select">
+                                <option value="@HashAlgorithmType.Md5">MD5 (Legacy)</option>
+                                <option value="@HashAlgorithmType.Sha1">SHA1 (Weak)</option>
+                                <option value="@HashAlgorithmType.Sha256">SHA256 (Recommended)</option>
+                                <option value="@HashAlgorithmType.Sha384">SHA384</option>
+                                <option value="@HashAlgorithmType.Sha512">SHA512</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 shadow-sm">Genereer Hash</button>
+                    </form>
+
+                    @if (ViewBag.hex != null)
+                    {
+                        <div class="mt-4 p-3 bg-light border border-primary rounded">
+                            <label class="form-label fw-bold text-primary small">Resulting Hash:</label>
+                            <textarea id="hashOutput" class="form-control font-monospace mb-2" rows="2" readonly>@ViewBag.hex</textarea>
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="CopyToClipboard('hashOutput')">
+                                <i class="bi bi-clipboard"></i> Kopieer naar klembord
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100 border-info">
+                <div class="card-header bg-info text-white">
+                    <h2 class="h5 mb-0">Verify Integrity</h2>
+                </div>
+                <div class="card-body">
+                    <form asp-action="VerifyHex" method="post">
+                        <div class="mb-3">
+                            <label asp-for="Hex" class="form-label fw-bold">Hash to Compare</label>
+                            <textarea asp-for="Hex" class="form-control border-info" rows="2" placeholder="Paste hex hash..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Message" class="form-label fw-bold">Original Message</label>
+                            <textarea asp-for="Message" class="form-control border-info" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="HashingType" class="form-label fw-bold">Algorithm</label>
+                            <select asp-for="HashingType" class="form-select">
+                                <option value="@HashAlgorithmType.Md5">MD5</option>
+                                <option value="@HashAlgorithmType.Sha1">SHA1</option>
+                                <option value="@HashAlgorithmType.Sha256">SHA256</option>
+                                <option value="@HashAlgorithmType.Sha384">SHA384</option>
+                                <option value="@HashAlgorithmType.Sha512">SHA512</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-info text-white w-100 shadow-sm">Verify Match</button>
+                    </form>
+
+                    @if (ViewBag.Status != null)
+                    {
+                        <div class="mt-3 alert @(ViewBag.Status.ToString().ToLower().Contains("match") ? "alert-success" : "alert-danger") shadow-sm">
+                            <strong>Status:</strong> @ViewBag.Status
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div asp-validation-summary="All" class="mt-4 alert alert-danger @(ViewData.ModelState.IsValid ? "d-none" : "")"></div>
+</div>

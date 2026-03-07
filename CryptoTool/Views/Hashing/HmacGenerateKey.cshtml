@@ -1,0 +1,49 @@
+﻿@using Encryptie_H4.Models.Hashing
+@using System.Security.Authentication
+@using static Encryptie_H4.Services.HashingService
+@model HmacModel
+
+@*
+    
+*@
+@{
+}
+
+<head>
+    <script src="~/js/CopyFromTextArea.js" defer></script>
+</head>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card shadow-sm border-primary">
+                <div class="card-header bg-primary text-white text-center">
+                    <h2 class="h5 mb-0">HMAC Key Generator</h2>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted small">Genereer een HMAC key</p>
+
+                    <a asp-action="HmacGenerateKey" class="btn btn-primary px-4 mb-4">
+                        <i class="bi bi-gear-fill me-2"></i>Generate New Key
+                    </a>
+
+                    @if (ViewBag.key != null)
+                    {
+                        <div class="p-3 bg-light border border-primary rounded text-start">
+                            <label class="form-label fw-bold text-primary small">Your Secret Key:</label>
+                            <textarea id="keyOutput" class="form-control font-monospace mb-2" rows="3" readonly>@ViewBag.key</textarea>
+
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="CopyToClipboard('keyOutput')">
+                                kopieer naar klembord
+                            </button>
+                            <div class="form-text text-danger mt-2">
+                                <i class="bi bi-exclamation-triangle-fill"></i> Hou deze key geheim!
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

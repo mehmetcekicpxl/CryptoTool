@@ -1,0 +1,101 @@
+﻿@using Encryptie_H4.Models.Hashing
+@using System.Security.Authentication
+@using static Encryptie_H4.Services.HashingService
+@model HmacModel
+
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<div class="container mt-4">
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">Create HMAC</h2>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CreateHmac" method="post">
+                        <div class="mb-3">
+                            <label asp-for="key" class="form-label fw-bold">Geheime Key</label>
+                            <input asp-for="key" class="form-control" placeholder="Enter key...">
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Message" class="form-label fw-bold">Bericht</label>
+                            <textarea asp-for="Message" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="HmacType" class="form-label fw-bold">Hash Type</label>
+                            <select asp-for="HmacType" class="form-select">
+                                <option value="@HmacType.HMACSHA256">HMACSHA256</option>
+                                <option value="@HmacType.HMACSHA384">HMACSHA384</option>
+                                <option value="@HmacType.HMACSHA512">HMACSHA512</option>
+                            </select>
+                        </div>
+                        @Html.Hidden("Hex", "‎‎ ");
+                        <button type="submit" class="btn btn-primary w-100">Genereer Hash</button>
+                    </form>
+
+                    @if (ViewBag.hex != null)
+                    {
+                        <div class="mt-4 p-3 bg-light border rounded">
+                            <label class="form-label fw-bold text-muted small">Genereerde Hash:</label>
+                            <code class="d-block text-break">@ViewBag.hex</code>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100 border-info">
+                <div class="card-header bg-info text-white">
+                    <h2 class="h5 mb-0">Verify HMAC</h2>
+                </div>
+                <div class="card-body">
+                    <form asp-action="VerifyHmac" method="post">
+                        <div class="mb-3">
+                            <label asp-for="Hex" class="form-label fw-bold">Hash om te verifiëren (Hex)</label>
+                            <textarea asp-for="Hex" class="form-control" rows="2" placeholder="Paste hash here..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="key" class="form-label fw-bold">Geheime Key</label>
+                            <input asp-for="key" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Message" class="form-label fw-bold">Origineel</label>
+                            <textarea asp-for="Message" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="HmacType" class="form-label fw-bold">Hash Type</label>
+                            <select asp-for="HmacType" class="form-select">
+                                <option value="@HmacType.HMACSHA256">HMACSHA256</option>
+                                <option value="@HmacType.HMACSHA384">HMACSHA384</option>
+                                <option value="@HmacType.HMACSHA512">HMACSHA512</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-info text-white w-100">verifeer</button>
+                    </form>
+                </div>
+                @if (ViewBag.Result != null)
+                {
+                    @if (ViewBag.Result == "Hmac klopt!")
+                    {
+                        <div class="alert alert-success mt-3 fw-bold">@ViewBag.Result</div>
+                    }
+
+                    else
+                    {
+                        <div class="alert alert-danger mt-3 fw-bold">@ViewBag.Result</div>
+                    }
+
+
+                }
+            </div>
+        </div>
+    </div>
+
+    
+    <div asp-validation-summary="All" class="mt-4 alert alert-danger @(ViewData.ModelState.IsValid ? "d-none" : "")"></div>
+</div>

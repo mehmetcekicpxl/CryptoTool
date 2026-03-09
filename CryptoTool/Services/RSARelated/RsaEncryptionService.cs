@@ -7,7 +7,7 @@ namespace Encryptie_H4.Services.RSARelated
 {
 
 
-    public class EncryptionService : IEncryptionService
+    public class RsaEncryptionService : IEncryptionService
     {
         private KeyCollection currentKeys = new();
         private RSA currentRsa;
@@ -44,15 +44,16 @@ namespace Encryptie_H4.Services.RSARelated
                     
                     else if(e.HResult == -1056964595)
                     {
-                        result.AddError("Key is niet geldig");
+                        result.AddError("Bericht te lang of PEM key niet geldig");
                     }
 
                     else
                     {
-                        result.AddError("Onbekende error");
+                        result.AddError("Onbekende error, bericht is mss te lang of PEM key niet geldig");
                     }
 
                     result.IsSuccesfull = false;
+                    result.EncryptiondResult = result.IsSuccesfull ? result.EncryptiondResult : "Error(s): see below"; 
                
                     return result;
                 }

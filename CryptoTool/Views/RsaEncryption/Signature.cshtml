@@ -17,11 +17,11 @@
                     <form asp-action="Signature" method="post">
                         <div class="mb-3">
                             <label asp-for="Message" class="form-label fw-bold">Bericht</label>
-                            <textarea asp-for="Message" class="form-control" rows="3"></textarea>
+                            <textarea required asp-for="Message" class="form-control" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
                             <label asp-for="RsaPrivateKey" class="form-label fw-bold">Privé Sleutel</label>
-                            <textarea asp-for="RsaPrivateKey" class="form-control font-monospace" rows="4"></textarea>
+                            <textarea required asp-for="RsaPrivateKey" class="form-control font-monospace" rows="4"></textarea>
                         </div>
 
                         @Html.Hidden("Signature", "(Signature here)")
@@ -35,8 +35,8 @@
                     {
                         <div class="mt-4 p-3 bg-light border rounded">
                             <label class="form-label fw-bold text-primary small">Digitale Handtekening:</label>
-                            <textarea id="sigOut" class="form-control font-monospace mb-2 text-break" rows="3" readonly>@Model.Signature</textarea>
-                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="copyAndDeselect('sigOut')">Kopieer</button>
+                            <textarea id="TextAreaSignature" class="form-control font-monospace mb-2 text-break" rows="3" readonly>@Model.Signature</textarea>
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="CopyToClipboard('TextAreaSignature')">Kopieer</button>
                         </div>
                     }
                 </div>
@@ -52,19 +52,19 @@
                     <form asp-action="VerifySignature" method="post">
                         <div class="mb-3">
                             <label asp-for="Message" class="form-label fw-bold">Origineel Bericht</label>
-                            <textarea asp-for="Message" class="form-control border-info" rows="2"></textarea>
+                            <textarea required asp-for="Message" class="form-control border-info" rows="2"></textarea>
                         </div>
                         <div class="mb-3">
                             <label asp-for="RsaPublicKey" class="form-label fw-bold">Publieke Sleutel</label>
-                            <textarea asp-for="RsaPublicKey" class="form-control border-info font-monospace" rows="3"></textarea>
+                            <textarea required asp-for="RsaPublicKey" class="form-control border-info font-monospace" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
                             <label asp-for="Signature" class="form-label fw-bold">Handtekening</label>
-                            <textarea asp-for="Signature" class="form-control border-info font-monospace" rows="2"></textarea>
+                            <textarea required asp-for="Signature" class="form-control border-info font-monospace" rows="2"></textarea>
                         </div>
 
                         @Html.Hidden("IsValid", false)
-                        @Html.Hidden("RsaPrivateKey", "")
+                        @Html.Hidden("RsaPrivateKey", "‎‎ ")
 
                         <button type="submit" class="btn btn-info text-white w-100 shadow-sm">Check Handtekening</button>
                     </form>

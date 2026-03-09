@@ -23,11 +23,11 @@
                     <form asp-action="HashText" method="post">
                         <div class="mb-3">
                             <label asp-for="Message" class="form-label fw-bold">Bericht</label>
-                            <textarea asp-for="Message" class="form-control border-primary" rows="4" placeholder="Enter bericht om te hashen"></textarea>
+                            <textarea required asp-for="Message" class="form-control border-primary" rows="4" placeholder="Enter bericht om te hashen"></textarea>
                         </div>
                         <div class="mb-3">
                             <label asp-for="HashingType" class="form-label fw-bold">Hash type</label>
-                            <select asp-for="HashingType" class="form-select">
+                            <select required asp-for="HashingType" class="form-select">
                                 <option value="@HashAlgorithmType.Md5">MD5 (Legacy)</option>
                                 <option value="@HashAlgorithmType.Sha1">SHA1 (Weak)</option>
                                 <option value="@HashAlgorithmType.Sha256">SHA256 (Recommended)</option>
@@ -60,15 +60,15 @@
                     <form asp-action="VerifyHex" method="post">
                         <div class="mb-3">
                             <label asp-for="Hex" class="form-label fw-bold">Hash to Compare</label>
-                            <textarea asp-for="Hex" class="form-control border-info" rows="2" placeholder="Paste hex hash..."></textarea>
+                            <textarea required asp-for="Hex" class="form-control border-info" rows="2" placeholder="Paste hex hash..."></textarea>
                         </div>
                         <div class="mb-3">
                             <label asp-for="Message" class="form-label fw-bold">Original Message</label>
-                            <textarea asp-for="Message" class="form-control border-info" rows="3"></textarea>
+                            <textarea required asp-for="Message" class="form-control border-info" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
                             <label asp-for="HashingType" class="form-label fw-bold">Algorithm</label>
-                            <select asp-for="HashingType" class="form-select">
+                            <select required asp-for="HashingType" class="form-select">
                                 <option value="@HashAlgorithmType.Md5">MD5</option>
                                 <option value="@HashAlgorithmType.Sha1">SHA1</option>
                                 <option value="@HashAlgorithmType.Sha256">SHA256</option>
@@ -81,7 +81,7 @@
 
                     @if (ViewBag.Status != null)
                     {
-                        <div class="mt-3 alert @(ViewBag.Status.ToString().ToLower().Contains("match") ? "alert-success" : "alert-danger") shadow-sm">
+                        <div class="mt-3 alert @(ViewBag.Status.ToString().Contains("Hash klopt!") ? "alert-success" : "alert-danger") shadow-sm">
                             <strong>Status:</strong> @ViewBag.Status
                         </div>
                     }

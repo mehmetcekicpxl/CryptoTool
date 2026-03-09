@@ -22,11 +22,11 @@
                     <form asp-action="EncryptMessage" method="post">
                         <div class="mb-3">
                             <label asp-for="Message" class="form-label fw-bold">Te versleutelen bericht</label>
-                            <textarea asp-for="Message" class="form-control" rows="3" placeholder="Typ hier je bericht..."></textarea>
+                            <textarea required asp-for="Message" class="form-control" rows="3" placeholder="Typ hier je bericht..."></textarea>
                         </div>
                         <div class="mb-3">
                             <label asp-for="PublicKey" class="form-label fw-bold">Publieke Sleutel (Public Key)</label>
-                            <textarea asp-for="PublicKey" class="form-control font-monospace" rows="4" placeholder="Plak de publieke sleutel hier..."></textarea>
+                            <textarea required asp-for="PublicKey" class="form-control font-monospace" rows="4" placeholder="Plak de publieke sleutel hier..."></textarea>
                         </div>
 
                         @Html.Hidden("PrivateKey", "NA")
@@ -34,7 +34,6 @@
 
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary flex-grow-1">Versleutelen</button>
-                            <a asp-action="UploadKey" class="btn btn-outline-primary">Sleutel Uploaden</a>
                         </div>
                     </form>
 
@@ -59,11 +58,11 @@
                     <form asp-action="DecryptMessage" method="post">
                         <div class="mb-3">
                             <label asp-for="EncryptedMessage" class="form-label fw-bold">Versleuteld Bericht (Ciphertext)</label>
-                            <textarea asp-for="EncryptedMessage" class="form-control" rows="3" placeholder="Plak het versleutelde bericht..."></textarea>
+                            <textarea required asp-for="EncryptedMessage" class="form-control" rows="3" placeholder="Plak het versleutelde bericht..."></textarea>
                         </div>
                         <div class="mb-3">
                             <label asp-for="PrivateKey" class="form-label fw-bold">Privé Sleutel (Private Key)</label>
-                            <textarea asp-for="PrivateKey" class="form-control font-monospace" rows="4" placeholder="Plak de privé sleutel hier..."></textarea>
+                            <textarea required asp-for="PrivateKey" class="form-control font-monospace" rows="4" placeholder="Plak de privé sleutel hier..."></textarea>
                         </div>
 
                         @Html.Hidden("PublicKey", "NA")

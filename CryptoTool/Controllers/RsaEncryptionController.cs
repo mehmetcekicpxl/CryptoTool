@@ -41,8 +41,9 @@ namespace Encryptie_H4.Controllers
             else
             {
                 keyAndMessage.EncryptedMessage = "Error(s): see below";
+                keyAndMessage.Message = null;
 
-                foreach(string error in result.GetErrors())
+                foreach (string error in result.GetErrors())
                 {
                     ModelState.AddModelError("", error);
                 }
@@ -171,11 +172,14 @@ namespace Encryptie_H4.Controllers
             if (result.IsSuccesfull)
             {
                 signatureAndMessage.Signature = result.EncryptiondResult;
-            }
+            }     
 
             else
             {
-                ModelState.AddModelError("", "fout bij signature");
+                foreach (string error in result.GetErrors())
+                {
+                    ModelState.AddModelError("", error);
+                }
             }
 
             return View(signatureAndMessage);
@@ -184,7 +188,6 @@ namespace Encryptie_H4.Controllers
         public IActionResult VerifySignature(SignatureAndMessage signatureAndMessage)
         {
             RsaEncryptionResult result = _encryptionService.VerifySignature(signatureAndMessage.Message, signatureAndMessage.Signature, signatureAndMessage.RsaPublicKey);
-
             signatureAndMessage.IsValid = result.IsSuccesfull;
 
             if(!result.IsSuccesfull)

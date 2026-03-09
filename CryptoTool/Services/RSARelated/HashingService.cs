@@ -151,7 +151,7 @@ namespace Encryptie_H4.Services
 
             StringComparer comparer = StringComparer.OrdinalIgnoreCase;
 
-            return comparer.Compare(hash, expectedHash) == 0;
+            return comparer.Compare(hash, expectedHash.Trim()) == 0;
         }
 
         public string HmacCreateKey()

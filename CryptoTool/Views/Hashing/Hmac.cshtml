@@ -8,6 +8,11 @@
 *@
 @{
 }
+
+<head>
+    <script src="~/js/CopyFromTextArea.js" defer></script>
+</head>
+
 <div class="container mt-4">
     <div class="row g-4">
         <div class="col-md-6">
@@ -19,15 +24,15 @@
                     <form asp-action="CreateHmac" method="post">
                         <div class="mb-3">
                             <label asp-for="key" class="form-label fw-bold">Geheime Key</label>
-                            <input asp-for="key" class="form-control" placeholder="Enter key...">
+                            <input required asp-for="key" class="form-control" placeholder="Enter key...">
                         </div>
                         <div class="mb-3">
                             <label asp-for="Message" class="form-label fw-bold">Bericht</label>
-                            <textarea asp-for="Message" class="form-control" rows="2"></textarea>
+                            <textarea required asp-for="Message" class="form-control" rows="2"></textarea>
                         </div>
                         <div class="mb-3">
                             <label asp-for="HmacType" class="form-label fw-bold">Hash Type</label>
-                            <select asp-for="HmacType" class="form-select">
+                            <select required asp-for="HmacType" class="form-select">
                                 <option value="@HmacType.HMACSHA256">HMACSHA256</option>
                                 <option value="@HmacType.HMACSHA384">HMACSHA384</option>
                                 <option value="@HmacType.HMACSHA512">HMACSHA512</option>
@@ -41,7 +46,10 @@
                     {
                         <div class="mt-4 p-3 bg-light border rounded">
                             <label class="form-label fw-bold text-muted small">Genereerde Hash:</label>
-                            <code class="d-block text-break">@ViewBag.hex</code>
+                            <textarea disabled Id="Output" class="d-block text-break w-100 h-50">@ViewBag.hex</textarea>
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="CopyToClipboard('Output')">
+                                <i class="bi bi-clipboard"></i> Kopieer naar klembord
+                            </button>
                         </div>
                     }
                 </div>
@@ -57,19 +65,19 @@
                     <form asp-action="VerifyHmac" method="post">
                         <div class="mb-3">
                             <label asp-for="Hex" class="form-label fw-bold">Hash om te verifiëren (Hex)</label>
-                            <textarea asp-for="Hex" class="form-control" rows="2" placeholder="Paste hash here..."></textarea>
+                            <textarea required asp-for="Hex" class="form-control" rows="2" placeholder="Paste hash here..."></textarea>
                         </div>
                         <div class="mb-3">
                             <label asp-for="key" class="form-label fw-bold">Geheime Key</label>
-                            <input asp-for="key" class="form-control">
+                            <input required asp-for="key" class="form-control">
                         </div>
                         <div class="mb-3">
                             <label asp-for="Message" class="form-label fw-bold">Origineel</label>
-                            <textarea asp-for="Message" class="form-control" rows="2"></textarea>
+                            <textarea required asp-for="Message" class="form-control" rows="2"></textarea>
                         </div>
                         <div class="mb-3">
                             <label asp-for="HmacType" class="form-label fw-bold">Hash Type</label>
-                            <select asp-for="HmacType" class="form-select">
+                            <select required asp-for="HmacType" class="form-select">
                                 <option value="@HmacType.HMACSHA256">HMACSHA256</option>
                                 <option value="@HmacType.HMACSHA384">HMACSHA384</option>
                                 <option value="@HmacType.HMACSHA512">HMACSHA512</option>

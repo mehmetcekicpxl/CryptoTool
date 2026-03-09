@@ -13,7 +13,7 @@ namespace CryptoTool
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
+            builder.Services.AddSingleton<IEncryptionService, RsaEncryptionService>();
             builder.Services.AddSingleton<IHashingService, HashingService>();
 
             var app = builder.Build();

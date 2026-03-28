@@ -1,26 +1,40 @@
 ﻿@using Encryptie_H4.Models.RsaEncryption
 @model SignatureAndMessage
 
-<head>
-    <script src="~/js/CopyFromTextArea.js" defer></script>
-</head>
-
-
 <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 text-secondary"><i class="bi bi-pen text-primary me-2"></i>Digitale Handtekening</h1>
+        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#signatureInfoModal">
+            <i class="bi bi-book"></i> Wat is een Signature?
+        </button>
+    </div>
+
+    <div class="alert alert-danger d-flex align-items-center mb-4 shadow-sm" role="alert">
+        <i class="bi bi-shield-fill-exclamation me-3 fs-3"></i>
+        <div>
+            <strong>Security Warning:</strong> Deel je privé sleutel nooit! Iedereen met jouw privé sleutel kan handtekeningen vervalsen uit jouw naam.
+        </div>
+    </div>
+
     <div class="row g-4">
         <div class="col-md-6">
             <div class="card shadow-sm h-100 border-primary">
-                <div class="card-header bg-primary text-white text-center">
-                    <h2 class="h5 mb-0">Ondertekenen</h2>
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0"><i class="bi bi-pencil-square me-2"></i>Ondertekenen</h2>
+                    <button type="button" class="btn btn-sm btn-light py-0" onclick="document.getElementById('formSign').reset();">Clear</button>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Signature" method="post">
+                    <form asp-action="Signature" method="post" id="formSign">
                         <div class="mb-3">
-                            <label asp-for="Message" class="form-label fw-bold">Bericht</label>
+                            <label asp-for="Message" class="form-label fw-bold">
+                                Bericht <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="Het bericht dat je wilt ondertekenen."></i>
+                            </label>
                             <textarea required asp-for="Message" class="form-control" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="RsaPrivateKey" class="form-label fw-bold">Privé Sleutel</label>
+                            <label asp-for="RsaPrivateKey" class="form-label fw-bold">
+                                Privé Sleutel <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="Jouw geheime sleutel waarmee de handtekening wordt gemaakt."></i>
+                            </label>
                             <textarea required asp-for="RsaPrivateKey" class="form-control font-monospace" rows="4"></textarea>
                         </div>
 
@@ -28,15 +42,20 @@
                         @Html.Hidden("RsaPublicKey", "NA")
                         @Html.Hidden("IsValid", false)
 
-                        <button type="submit" class="btn btn-primary w-100 shadow-sm">Signeer Bericht</button>
+                        <button type="submit" class="btn btn-primary w-100 shadow-sm btn-loading">
+                            <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                            <span>Signeer Bericht</span>
+                        </button>
                     </form>
 
                     @if (!string.IsNullOrEmpty(Model.Signature) && Model.Signature != "(Signature here)")
                     {
-                        <div class="mt-4 p-3 bg-light border rounded">
+                        <div class="mt-4 p-3 bg-light border border-primary rounded">
                             <label class="form-label fw-bold text-primary small">Digitale Handtekening:</label>
                             <textarea id="TextAreaSignature" class="form-control font-monospace mb-2 text-break" rows="3" readonly>@Model.Signature</textarea>
-                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="CopyToClipboard('TextAreaSignature')">Kopieer</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="copyAndDeselect('TextAreaSignature')">
+                                <i class="bi bi-clipboard"></i> Kopieer
+                            </button>
                         </div>
                     }
                 </div>
@@ -45,41 +64,53 @@
 
         <div class="col-md-6">
             <div class="card shadow-sm h-100 border-info">
-                <div class="card-header bg-info text-white text-center">
-                    <h2 class="h5 mb-0">Verifiëren</h2>
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0"><i class="bi bi-check2-circle me-2"></i>Verifiëren</h2>
+                    <button type="button" class="btn btn-sm btn-light py-0" onclick="document.getElementById('formVerify').reset();">Clear</button>
                 </div>
                 <div class="card-body">
-                    <form asp-action="VerifySignature" method="post">
+                    <form asp-action="VerifySignature" method="post" id="formVerify">
                         <div class="mb-3">
-                            <label asp-for="Message" class="form-label fw-bold">Origineel Bericht</label>
+                            <label asp-for="Message" class="form-label fw-bold">
+                                Origineel Bericht <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="Het exacte originele bericht zonder aanpassingen."></i>
+                            </label>
                             <textarea required asp-for="Message" class="form-control border-info" rows="2"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="RsaPublicKey" class="form-label fw-bold">Publieke Sleutel</label>
+                            <label asp-for="RsaPublicKey" class="form-label fw-bold">
+                                Publieke Sleutel <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="De openbare sleutel van de verzender."></i>
+                            </label>
                             <textarea required asp-for="RsaPublicKey" class="form-control border-info font-monospace" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="Signature" class="form-label fw-bold">Handtekening</label>
+                            <label asp-for="Signature" class="form-label fw-bold">
+                                Handtekening <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="De gegenereerde base64 handtekening."></i>
+                            </label>
                             <textarea required asp-for="Signature" class="form-control border-info font-monospace" rows="2"></textarea>
                         </div>
 
                         @Html.Hidden("IsValid", false)
                         @Html.Hidden("RsaPrivateKey", "‎‎ ")
 
-                        <button type="submit" class="btn btn-info text-white w-100 shadow-sm">Check Handtekening</button>
+                        <button type="submit" class="btn btn-info text-white w-100 shadow-sm btn-loading">
+                            <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                            <span>Check Handtekening</span>
+                        </button>
                     </form>
 
-                    <div class="mt-3">
+                    <div class="mt-4">
                         @if (Model.IsValid)
                         {
-                            <div class="alert alert-success d-flex align-items-center mb-0 shadow-sm">
-                                <strong>Geldig!</strong> De handtekening is geverifieerd.
+                            <div class="alert alert-success d-flex align-items-center mb-0 shadow-sm border-success">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                <div><strong>Geldig!</strong> De handtekening is geverifieerd. De afzender klopt en het bericht is niet aangepast.</div>
                             </div>
                         }
                         else if (ViewBag.Fail != null)
                         {
-                            <div class="alert alert-danger mb-0 shadow-sm">
-                                <strong>Ongeldig:</strong> @ViewBag.Fail
+                            <div class="alert alert-danger d-flex align-items-center mb-0 shadow-sm border-danger">
+                                <i class="bi bi-x-circle-fill me-2"></i>
+                                <div><strong>Ongeldig:</strong> @ViewBag.Fail</div>
                             </div>
                         }
                     </div>
@@ -87,7 +118,41 @@
             </div>
         </div>
     </div>
-
     <div asp-validation-summary="All" class="mt-4 alert alert-danger @(ViewData.ModelState.IsValid ? "d-none" : "")"></div>
 </div>
 
+<div class="modal fade" id="signatureInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title"><i class="bi bi-book text-info me-2"></i>Wat is een Digitale Handtekening?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Een digitale handtekening bewijst de authenticiteit en integriteit van een bericht.</p>
+                <ul>
+                    <li>Er wordt een <strong>Hash</strong> van het bericht gemaakt.</li>
+                    <li>Deze hash wordt versleuteld met de <strong>Privé Sleutel</strong> van de verzender (Ondertekenen).</li>
+                    <li>De ontvanger ontsleutelt de hash met de <strong>Publieke Sleutel</strong> en vergelijkt deze met een zelfgemaakte hash van het bericht (Verifiëren).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/CopyFromTextArea.js"></script>
+    <script>
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if(this.checkValidity()) {
+                    let btn = this.querySelector('.btn-loading');
+                    if(btn) {
+                        btn.querySelector('.spinner-border').classList.remove('d-none');
+                        btn.disabled = true;
+                    }
+                }
+            });
+        });
+    </script>
+}

@@ -1,16 +1,13 @@
-﻿<h2 class="h4 mb-3 border-bottom pb-2">Hashing Navigation</h2>
-
-<ul class="nav flex-column gap-2 w-25">
-    <li class="nav-item d-grid">
-        <a class="btn btn-outline-primary" asp-area="" asp-controller="Hashing" asp-action="Hashing">Hashing</a>
-    </li>
-    <li class="nav-item d-grid">
-        <a class="btn btn-outline-primary" asp-area="" asp-controller="Hashing" asp-action="FileHashing">File Hashing</a>
-    </li>
-    <li class="nav-item d-grid">
-        <a class="btn btn-outline-primary" asp-area="" asp-controller="Hashing" asp-action="Hmac">HMAC</a>
-    </li>
-    <li class="nav-item d-grid">
-        <a class="btn btn-outline-primary" asp-area="" asp-controller="Hashing" asp-action="HmacGenerateKey">Generate HMAC Key</a>
-    </li>
-</ul>
+﻿<div class="container mt-4">
+    <h2 class="h4 mb-4 border-bottom pb-2"><i class="bi bi-hash me-2"></i>Hashing Navigatie</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="d-grid gap-3">
+                <a class="btn btn-outline-primary btn-lg text-start shadow-sm" asp-area="" asp-controller="Hashing" asp-action="Hashing"><i class="bi bi-file-text me-2"></i> Text Hashing</a>
+                <a class="btn btn-outline-primary btn-lg text-start shadow-sm" asp-area="" asp-controller="Hashing" asp-action="FileHashing"><i class="bi bi-file-earmark-binary me-2"></i> File Hashing</a>
+                <a class="btn btn-outline-primary btn-lg text-start shadow-sm" asp-area="" asp-controller="Hashing" asp-action="Hmac"><i class="bi bi-shield-lock me-2"></i> HMAC</a>
+                <a class="btn btn-outline-primary btn-lg text-start shadow-sm" asp-area="" asp-controller="Hashing" asp-action="HmacGenerateKey"><i class="bi bi-key me-2"></i> Generate HMAC Key</a>
+            </div>
+        </div>
+    </div>
+</div>

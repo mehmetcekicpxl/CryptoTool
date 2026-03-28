@@ -27,14 +27,21 @@ namespace Encryptie_H4.Controllers
         [HttpPost]
         public IActionResult HashText(HashingModel hashAndText)
         {
-            if(ModelState.IsValid)
+            try
             {
-                ViewData["Hex"] = _hashingService.ComputeHash(hashAndText.Message, hashAndText.HashingType);
-                hashAndText.Message = "";
+                if (ModelState.IsValid)
+                {
+                    ViewData["Hex"] = _hashingService.ComputeHash(hashAndText.Message, hashAndText.HashingType);
+                    hashAndText.Message = "";
 
-                return View("Hashing", hashAndText);
+                    return View("Hashing", hashAndText);
+                }
             }
-
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Hashing Error] Text hashing failed: {ex.Message}");
+                ModelState.AddModelError("", "Er is een fout opgetreden bij het berekenen van de hash.");
+            }
             return View("Hashing", hashAndText);
 
         }
@@ -54,9 +61,16 @@ namespace Encryptie_H4.Controllers
                 return View("FileHashing", hashAndText);
             }
 
-            Stream filestream = hashAndText.fileToHash.OpenReadStream();
-            ViewData["Hex"] = _hashingService.ComputeFileHash(filestream, hashAndText.HashingType);
-
+            try
+            {
+                Stream filestream = hashAndText.fileToHash.OpenReadStream();
+                ViewData["Hex"] = _hashingService.ComputeFileHash(filestream, hashAndText.HashingType);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Hashing Error] File hashing failed: {ex.Message}");
+                ModelState.AddModelError("", "Fout bij het lezen van het bestand. Mogelijk is het bestand beschadigd of vergrendeld.");
+            }
             return View("FileHashing", hashAndText);
         }
 
@@ -67,16 +81,23 @@ namespace Encryptie_H4.Controllers
                 return View("Hashing", hashingModel);
             }
 
-            if (_hashingService.VerifyHash(hashingModel.Message, hashingModel.Hex, hashingModel.HashingType))
+            try
             {
-                ViewData["Status"] = "Hash klopt!";
-            }
+                if (_hashingService.VerifyHash(hashingModel.Message, hashingModel.Hex, hashingModel.HashingType))
+                {
+                    ViewData["Status"] = "Hash klopt!";
+                }
 
-            else
+                else
+                {
+                    ViewData["Status"] = "Hash klopt niet!";
+                }
+            }
+            catch (Exception ex)
             {
-                ViewData["Status"] = "Hash klopt niet!";
+                Console.WriteLine($"[Hashing Error] Hex verification failed: {ex.Message}");
+                ViewData["Status"] = "Verificatie mislukt door een onverwachte fout.";
             }
-
             return View("Hashing", hashingModel);
 
         }
@@ -89,15 +110,24 @@ namespace Encryptie_H4.Controllers
                 return View("FileHashing", hashingModel);
             }
 
-            if (_hashingService.VerifyHashFile(hashingModel.fileToHash.OpenReadStream(), hashingModel.Hex, hashingModel.HashingType))
+            try
             {
-                ViewData["Status"] = "Hash klopt!";
-            }
+                if (_hashingService.VerifyHashFile(hashingModel.fileToHash.OpenReadStream(), hashingModel.Hex, hashingModel.HashingType))
+                {
+                    ViewData["Status"] = "Hash klopt!";
+                }
 
-            else
-            {
-                ViewData["Status"] = "Hash klopt niet!";
+                else
+                {
+                    ViewData["Status"] = "Hash klopt niet!";
+                }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Hashing Error] File hex verification failed: {ex.Message}");
+                ViewData["Status"] = "Bestand verificatie mislukt. Controleer de invoer.";
+            }
+            
 
             return View("FileHashing", hashingModel);
         }
@@ -109,15 +139,20 @@ namespace Encryptie_H4.Controllers
 
         public IActionResult CreateHmac(HmacModel hmacModel)
         {
-
-            if (ModelState.IsValid)
+            try
             {
-                hmacModel.Hex = _hashingService.HmacCreate(hmacModel.key, hmacModel.Message, hmacModel.HmacType);
-                ViewData["hex"] = hmacModel.Hex;
-                return View("Hmac", hmacModel);
+                if (ModelState.IsValid)
+                {
+                    hmacModel.Hex = _hashingService.HmacCreate(hmacModel.key, hmacModel.Message, hmacModel.HmacType);
+                    ViewData["hex"] = hmacModel.Hex;
+                    return View("Hmac", hmacModel);
+                }
             }
-
-
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[HMAC Error] Creation failed: {ex.Message}");
+                ModelState.AddModelError("", "Fout bij het genereren van de HMAC.");
+            }
             return View("Hmac", hmacModel);
         }
 
@@ -128,23 +163,40 @@ namespace Encryptie_H4.Controllers
                 return View("Hmac", hmacModel);
             }
 
-            if (_hashingService.VerifyHmac(hmacModel.Message, hmacModel.Hex, hmacModel.key, hmacModel.HmacType))
+            try
             {
-                ViewData["Result"] = "Hmac klopt!";
-            }
+                if (_hashingService.VerifyHmac(hmacModel.Message, hmacModel.Hex, hmacModel.key, hmacModel.HmacType))
+                {
+                    ViewData["Result"] = "Hmac klopt!";
+                }
 
-            else
+                else
+                {
+                    ViewData["Result"] = "Hmac klopt niet!";
+                }
+            }
+            catch (Exception ex)
             {
-                ViewData["Result"] = "Hmac klopt niet!";
+                Console.WriteLine($"[HMAC Error] Verification failed: {ex.Message}");
+                ViewData["Result"] = "Fout tijdens het verifiëren van de HMAC.";
             }
-
             return View("Hmac", hmacModel);
         }
 
         [HttpGet]
         public IActionResult HmacGenerateKey()
         {
-            ViewData["key"] = _hashingService.HmacCreateKey();
+            try
+            {
+                ViewData["key"] = _hashingService.HmacCreateKey();
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine($"[HMAC Error] Key generation failed: {ex.Message}");
+                ViewData["key"] = "Error generating key.";
+            }
+            
             return View();
         }
 

@@ -2,7 +2,61 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-5">
+    <div class="row align-items-center mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <i class="bi bi-shield-lock text-primary mb-3 d-block" style="font-size: 5rem;"></i>
+            <h1 class="display-4 fw-bold">CryptoTool Dashboard</h1>
+            <p class="lead text-muted mt-3">Selecteer een cryptografische tool om te beginnen met versleutelen, hashen of sleutels genereren.</p>
+            <hr class="w-25 mx-auto border-primary" style="border-width: 3px;">
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0 bg-light hover-card">
+                <div class="card-body text-center d-flex flex-column">
+                    <i class="bi bi-key-fill text-warning fs-1 mb-3"></i>
+                    <h5 class="card-title fw-bold">Key Generator</h5>
+                    <p class="card-text text-muted small mb-4">Genereer veilige, willekeurige sleutels voor AES (Symmetrisch) en sleutelparen voor RSA (Asymmetrisch).</p>
+                    <a asp-controller="KeyGenerator" asp-action="Index" class="btn btn-outline-warning mt-auto fw-bold">Open Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0 bg-light hover-card">
+                <div class="card-body text-center d-flex flex-column">
+                    <i class="bi bi-lock-fill text-primary fs-1 mb-3"></i>
+                    <h5 class="card-title fw-bold">AES Encryptie</h5>
+                    <p class="card-text text-muted small mb-4">Beveilig grote stukken tekst of bestanden met de Advanced Encryption Standard. Extreem snel en veilig.</p>
+                    <a asp-controller="Encryption" asp-action="Index" class="btn btn-outline-primary mt-auto fw-bold">Open Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0 bg-light hover-card">
+                <div class="card-body text-center d-flex flex-column">
+                    <i class="bi bi-shield-check text-success fs-1 mb-3"></i>
+                    <h5 class="card-title fw-bold">RSA Encryptie</h5>
+                    <p class="card-text text-muted small mb-4">Wissel veilig geheimen uit met publieke en private sleutels, of zet een digitale handtekening onder een bericht.</p>
+                    <a asp-controller="RsaEncryption" asp-action="Index" class="btn btn-outline-success mt-auto fw-bold">Open Tool</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0 bg-light hover-card">
+                <div class="card-body text-center d-flex flex-column">
+                    <i class="bi bi-hash text-info fs-1 mb-3"></i>
+                    <h5 class="card-title fw-bold">Hashing & HMAC</h5>
+                    <p class="card-text text-muted small mb-4">Bereken unieke 'vingerafdrukken' van data om de integriteit te verifiëren met SHA-algoritmes en HMAC.</p>
+                    <a asp-controller="Hashing" asp-action="Index" class="btn btn-outline-info mt-auto fw-bold">Open Tool</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>

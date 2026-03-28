@@ -1,3 +1,5 @@
+using CryptoTool.Services.Advanced;
+using CryptoTool.Services.Advanced.Interfaces;
 using Encryptie_H4.Services;
 using Encryptie_H4.Services.RSARelated;
 using Encryptie_H4.Services.RSARelated.Interfaces;
@@ -15,6 +17,7 @@ namespace CryptoTool
 
             builder.Services.AddSingleton<IEncryptionService, RsaEncryptionService>();
             builder.Services.AddSingleton<IHashingService, HashingService>();
+            builder.Services.AddScoped<IAdvancedCryptoService, AdvancedCryptoService>();
 
             var app = builder.Build();
 

@@ -1,70 +1,118 @@
 ﻿@{
-    ViewData["Title"] = "Encryption Tool";
+    ViewData["Title"] = "AES Encryptie Tool";
 }
 
-<div class="container mt-5">
-    <h2 class="text-center mb-4">🔐 Encryptie & Decryptie Tool</h2>
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 text-secondary"><i class="bi bi-shield-lock text-primary me-2"></i>Symmetrische Encryptie (AES)</h1>
+        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#aesInfoModal">
+            <i class="bi bi-book"></i> Wat is AES?
+        </button>
+    </div>
 
     @if (ViewBag.Error != null)
     {
-        <div class="alert alert-danger">@ViewBag.Error</div>
+        <div class="alert alert-danger shadow-sm d-flex align-items-center">
+             <i class="bi bi-exclamation-octagon-fill me-2 fs-4"></i>
+             <div>@ViewBag.Error</div>
+        </div>
     }
 
     <ul class="nav nav-tabs mb-4" id="cryptoTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="text-tab" data-bs-toggle="tab" data-bs-target="#text-content" type="button" role="tab">
-                📝 Tekst Encryptie
+                <i class="bi bi-file-text me-1"></i> Tekst Encryptie
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="file-tab" data-bs-toggle="tab" data-bs-target="#file-content" type="button" role="tab">
-                📁 Bestand (File) Encryptie
+                <i class="bi bi-file-earmark-lock me-1"></i> Bestand (File) Encryptie
             </button>
         </li>
     </ul>
 
     <div class="tab-content" id="cryptoTabsContent">
-        
         <div class="tab-pane fade show active" id="text-content" role="tabpanel">
-            <div class="row">
+            <div class="row g-4">
                 <div class="col-md-6">
-                    <div class="card shadow-sm border-primary">
-                        <div class="card-header bg-primary text-white">Encrypt Tekst</div>
+                    <div class="card shadow-sm border-primary h-100">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <span class="fw-bold"><i class="bi bi-lock-fill me-1"></i>Encrypt Tekst</span>
+                            <button type="button" class="btn btn-sm btn-light py-0" onclick="document.getElementById('formEncryptText').reset();">Clear</button>
+                        </div>
                         <div class="card-body">
-                            <form asp-action="Encrypt" method="post">
-                                <textarea name="plainText" class="form-control mb-2" rows="3" placeholder="Tekst invoeren..." required>@ViewBag.PlainText</textarea>
+                            <form asp-action="Encrypt" method="post" id="formEncryptText">
+                                <label class="form-label fw-bold">Plaintext <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="De leesbare tekst die je wilt versleutelen."></i></label>
+                                <textarea name="plainText" class="form-control mb-3" rows="3" placeholder="Tekst invoeren..." required>@ViewBag.PlainText</textarea>
                                 
-                                <div class="row mb-2">
-                                    <div class="col"><select name="mode" class="form-select"><option value="CBC">CBC</option><option value="ECB">ECB</option></select></div>
-                                    <div class="col"><select name="padding" class="form-select"><option value="PKCS7">PKCS7</option><option value="Zeros">Zeros</option></select></div>
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label class="form-label fw-bold">Cipher Mode <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="Hoe de blokken data verwerkt worden. CBC is veel veiliger dan ECB."></i></label>
+                                        <select name="mode" class="form-select">
+                                            <option value="CBC">CBC (Recommended)</option>
+                                            <option value="ECB">ECB (Insecure)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col">
+                                        <label class="form-label fw-bold">Padding <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="Hoe lege ruimte in een datablok wordt opgevuld."></i></label>
+                                        <select name="padding" class="form-select">
+                                            <option value="PKCS7">PKCS7</option>
+                                            <option value="Zeros">Zeros</option>
+                                        </select>
+                                    </div>
                                 </div>
 
-                                <input type="text" name="key" class="form-control mb-2 font-monospace" placeholder="Key (Base64)" value="@ViewBag.Key" required />
-                                <input type="text" name="iv" class="form-control mb-3 font-monospace" placeholder="IV (Base64)" value="@ViewBag.IV" required />
-                                <button type="submit" class="btn btn-primary w-100">🔒 Encrypt</button>
+                                <label class="form-label fw-bold">Secret Key (Base64) <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="De geheime sleutel. Deze moet je goed bewaren!"></i></label>
+                                <input type="text" name="key" class="form-control mb-3 font-monospace" placeholder="Key (Base64)" value="@ViewBag.Key" required />
+                                
+                                <label class="form-label fw-bold">Initialization Vector (IV) <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="Zorgt voor willekeur. Moet uniek zijn per encryptie, maar mag wel openbaar gedeeld worden."></i></label>
+                                <input type="text" name="iv" class="form-control mb-4 font-monospace" placeholder="IV (Base64)" value="@ViewBag.IV" required />
+                                
+                                <button type="submit" class="btn btn-primary w-100 btn-loading">
+                                     <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                                     <span>Encrypt</span>
+                                </button>
                             </form>
-                            @if (ViewBag.Result != null) { <code class="d-block mt-3 text-break alert alert-success">@ViewBag.Result</code> }
+                            @if (ViewBag.Result != null) { <code class="d-block mt-4 text-break alert alert-success border-success">@ViewBag.Result</code> }
                         </div>
                     </div>
                 </div>
 
                 <div class="col-md-6">
-                    <div class="card shadow-sm border-success">
-                        <div class="card-header bg-success text-white">Decrypt Tekst</div>
+                    <div class="card shadow-sm border-success h-100">
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                            <span class="fw-bold"><i class="bi bi-unlock-fill me-1"></i>Decrypt Tekst</span>
+                            <button type="button" class="btn btn-sm btn-light py-0" onclick="document.getElementById('formDecryptText').reset();">Clear</button>
+                        </div>
                         <div class="card-body">
-                            <form asp-action="Decrypt" method="post">
-                                <textarea name="cipherText" class="form-control mb-2" rows="3" placeholder="Ciphertext..." required>@ViewBag.CipherTextInput</textarea>
+                            <form asp-action="Decrypt" method="post" id="formDecryptText">
+                                <label class="form-label fw-bold">Ciphertext <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="De versleutelde data."></i></label>
+                                <textarea name="cipherText" class="form-control mb-3" rows="3" placeholder="Ciphertext..." required>@ViewBag.CipherTextInput</textarea>
                                 
-                                <div class="row mb-2">
-                                    <div class="col"><select name="mode" class="form-select"><option value="CBC">CBC</option><option value="ECB">ECB</option></select></div>
-                                    <div class="col"><select name="padding" class="form-select"><option value="PKCS7">PKCS7</option><option value="Zeros">Zeros</option></select></div>
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label class="form-label fw-bold">Cipher Mode</label>
+                                        <select name="mode" class="form-select"><option value="CBC">CBC</option><option value="ECB">ECB</option></select>
+                                    </div>
+                                    <div class="col">
+                                        <label class="form-label fw-bold">Padding</label>
+                                        <select name="padding" class="form-select"><option value="PKCS7">PKCS7</option><option value="Zeros">Zeros</option></select>
+                                    </div>
                                 </div>
 
-                                <input type="text" name="key" class="form-control mb-2 font-monospace" value="@ViewBag.KeyDecrypt" required />
-                                <input type="text" name="iv" class="form-control mb-3 font-monospace" value="@ViewBag.IVDecrypt" required />
-                                <button type="submit" class="btn btn-success w-100">🔓 Decrypt</button>
+                                <label class="form-label fw-bold">Secret Key (Base64)</label>
+                                <input type="text" name="key" class="form-control mb-3 font-monospace" value="@ViewBag.KeyDecrypt" required />
+                                
+                                <label class="form-label fw-bold">Initialization Vector (IV)</label>
+                                <input type="text" name="iv" class="form-control mb-4 font-monospace" value="@ViewBag.IVDecrypt" required />
+                                
+                                <button type="submit" class="btn btn-success w-100 btn-loading">
+                                    <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                                    <span>Decrypt</span>
+                                </button>
                             </form>
-                            @if (ViewBag.DecryptedResult != null) { <div class="alert alert-info mt-3 fw-bold">@ViewBag.DecryptedResult</div> }
+                            @if (ViewBag.DecryptedResult != null) { <div class="alert alert-info mt-4 fw-bold border-info">@ViewBag.DecryptedResult</div> }
                         </div>
                     </div>
                 </div>
@@ -72,54 +120,61 @@
         </div>
 
         <div class="tab-pane fade" id="file-content" role="tabpanel">
-            <div class="alert alert-warning">
-                <i class="bi bi-info-circle"></i> <strong>Let op:</strong> Bestanden worden in het geheugen verwerkt. Upload geen bestanden groter dan 10MB.
+            <div class="alert alert-warning shadow-sm">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Let op:</strong> Bestanden worden in het geheugen verwerkt (Client-side limitatie). Upload geen bestanden groter dan 10MB.
             </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card shadow-sm border-primary">
-                        <div class="card-header bg-primary text-white">Encrypt Bestand</div>
+            <div class="row g-4">
+                 <div class="col-md-6">
+                    <div class="card shadow-sm border-primary h-100">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <span class="fw-bold"><i class="bi bi-file-lock-fill me-1"></i>Encrypt Bestand</span>
+                        </div>
                         <div class="card-body">
-                            <form asp-action="EncryptFile" method="post" enctype="multipart/form-data">
+                            <form asp-action="EncryptFile" method="post" enctype="multipart/form-data" class="form-loading">
                                 <div class="mb-3">
-                                    <label class="form-label">Kies bestand:</label>
+                                    <label class="form-label fw-bold">Kies bestand:</label>
                                     <input type="file" name="file" class="form-control" required />
                                 </div>
-
-                                <div class="row mb-2">
-                                    <div class="col"><select name="mode" class="form-select"><option value="CBC">CBC</option><option value="ECB">ECB</option></select></div>
-                                    <div class="col"><select name="padding" class="form-select"><option value="PKCS7">PKCS7</option><option value="Zeros">Zeros</option></select></div>
+                                <div class="row mb-3">
+                                    <div class="col"><label class="form-label fw-bold">Mode</label><select name="mode" class="form-select"><option value="CBC">CBC</option><option value="ECB">ECB</option></select></div>
+                                    <div class="col"><label class="form-label fw-bold">Padding</label><select name="padding" class="form-select"><option value="PKCS7">PKCS7</option><option value="Zeros">Zeros</option></select></div>
                                 </div>
-
-                                <input type="text" name="key" class="form-control mb-2 font-monospace" placeholder="Plak Key hier..." required />
-                                <input type="text" name="iv" class="form-control mb-3 font-monospace" placeholder="Plak IV hier..." required />
-                                
-                                <button type="submit" class="btn btn-primary w-100">⬇️ Encrypt & Download</button>
+                                <label class="form-label fw-bold">Secret Key</label>
+                                <input type="text" name="key" class="form-control mb-3 font-monospace" required />
+                                <label class="form-label fw-bold">IV</label>
+                                <input type="text" name="iv" class="form-control mb-4 font-monospace" required />
+                                <button type="submit" class="btn btn-primary w-100 btn-loading">
+                                     <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                                     <span>Encrypt & Download</span>
+                                </button>
                             </form>
                         </div>
                     </div>
                 </div>
-
                 <div class="col-md-6">
-                    <div class="card shadow-sm border-success">
-                        <div class="card-header bg-success text-white">Decrypt Bestand</div>
+                     <div class="card shadow-sm border-success h-100">
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                            <span class="fw-bold"><i class="bi bi-file-earmark-break-fill me-1"></i>Decrypt Bestand</span>
+                        </div>
                         <div class="card-body">
-                            <form asp-action="DecryptFile" method="post" enctype="multipart/form-data">
+                            <form asp-action="DecryptFile" method="post" enctype="multipart/form-data" class="form-loading">
                                 <div class="mb-3">
-                                    <label class="form-label">Kies versleuteld bestand (.enc):</label>
+                                    <label class="form-label fw-bold">Kies bestand (.enc):</label>
                                     <input type="file" name="file" class="form-control" required />
                                 </div>
-
-                                <div class="row mb-2">
-                                    <div class="col"><select name="mode" class="form-select"><option value="CBC">CBC</option><option value="ECB">ECB</option></select></div>
-                                    <div class="col"><select name="padding" class="form-select"><option value="PKCS7">PKCS7</option><option value="Zeros">Zeros</option></select></div>
+                                <div class="row mb-3">
+                                    <div class="col"><label class="form-label fw-bold">Mode</label><select name="mode" class="form-select"><option value="CBC">CBC</option><option value="ECB">ECB</option></select></div>
+                                    <div class="col"><label class="form-label fw-bold">Padding</label><select name="padding" class="form-select"><option value="PKCS7">PKCS7</option><option value="Zeros">Zeros</option></select></div>
                                 </div>
-
-                                <input type="text" name="key" class="form-control mb-2 font-monospace" placeholder="Plak Key hier..." required />
-                                <input type="text" name="iv" class="form-control mb-3 font-monospace" placeholder="Plak IV hier..." required />
-                                
-                                <button type="submit" class="btn btn-success w-100">⬇️ Decrypt & Download</button>
+                                <label class="form-label fw-bold">Secret Key</label>
+                                <input type="text" name="key" class="form-control mb-3 font-monospace" required />
+                                <label class="form-label fw-bold">IV</label>
+                                <input type="text" name="iv" class="form-control mb-4 font-monospace" required />
+                                <button type="submit" class="btn btn-success w-100 btn-loading">
+                                     <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                                     <span>Decrypt & Download</span>
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -128,3 +183,39 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="aesInfoModal" tabindex="-1" aria-labelledby="aesInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="aesInfoModalLabel"><i class="bi bi-book text-info me-2"></i>Wat is AES?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>AES (Advanced Encryption Standard)</strong> is de wereldwijde standaard voor symmetrische encryptie.</p>
+                <ul>
+                    <li><strong>Symmetrisch:</strong> Je gebruikt *dezelfde* sleutel om te versleutelen én te ontsleutelen.</li>
+                    <li><strong>Snelheid:</strong> Omdat het symmetrisch is, is AES extreem snel en zeer geschikt voor het beveiligen van grote bestanden of databases.</li>
+                    <li><strong>Uitdaging:</strong> Hoe deel je veilig de geheime sleutel met de ontvanger? (Dit doe je vaak met behulp van RSA!).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Voeg loading state toe aan alle formulieren met de class .btn-loading
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if(this.checkValidity()) {
+                    let btn = this.querySelector('.btn-loading');
+                    if(btn) {
+                        btn.querySelector('.spinner-border').classList.remove('d-none');
+                        btn.disabled = true;
+                    }
+                }
+            });
+        });
+    </script>
+}

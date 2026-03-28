@@ -3,41 +3,30 @@
 @using static Encryptie_H4.Services.HashingService
 @model HmacModel
 
-@*
-    
-*@
-@{
-}
-
-<head>
-    <script src="~/js/CopyFromTextArea.js" defer></script>
-</head>
-
-<div class="container mt-4">
+<div class="container mt-5">
     <div class="row">
         <div class="col-md-6 mx-auto">
             <div class="card shadow-sm border-primary">
                 <div class="card-header bg-primary text-white text-center">
-                    <h2 class="h5 mb-0">HMAC Key Generator</h2>
+                    <h2 class="h5 mb-0"><i class="bi bi-key-fill me-2"></i>HMAC Key Generator</h2>
                 </div>
-                <div class="card-body text-center">
-                    <p class="text-muted small">Genereer een HMAC key</p>
+                <div class="card-body text-center p-4">
+                    <p class="text-muted mb-4">Genereer een cryptografisch veilige sleutel voor HMAC hashing.</p>
 
-                    <a asp-action="HmacGenerateKey" class="btn btn-primary px-4 mb-4">
+                    <a asp-action="HmacGenerateKey" class="btn btn-primary px-4 mb-4 shadow-sm">
                         <i class="bi bi-gear-fill me-2"></i>Generate New Key
                     </a>
 
                     @if (ViewBag.key != null)
                     {
-                        <div class="p-3 bg-light border border-primary rounded text-start">
+                        <div class="p-3 bg-light border border-primary rounded text-start shadow-sm">
                             <label class="form-label fw-bold text-primary small">Your Secret Key:</label>
-                            <textarea id="keyOutput" class="form-control font-monospace mb-2" rows="3" readonly>@ViewBag.key</textarea>
-
-                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="CopyToClipboard('keyOutput')">
-                                kopieer naar klembord
+                            <textarea id="keyOutput" class="form-control font-monospace mb-3" rows="3" readonly>@ViewBag.key</textarea>
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="copyAndDeselect('keyOutput')">
+                                <i class="bi bi-clipboard"></i> Kopieer naar klembord
                             </button>
-                            <div class="form-text text-danger mt-2">
-                                <i class="bi bi-exclamation-triangle-fill"></i> Hou deze key geheim!
+                            <div class="alert alert-danger mt-3 mb-0 py-2">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i> Hou deze key strikt geheim!
                             </div>
                         </div>
                     }
@@ -46,4 +35,6 @@
         </div>
     </div>
 </div>
-
+@section Scripts {
+    <script src="~/js/CopyFromTextArea.js"></script>
+}

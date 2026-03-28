@@ -3,51 +3,54 @@
 @using static Encryptie_H4.Services.HashingService
 @model HmacModel
 
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
-
-<head>
-    <script src="~/js/CopyFromTextArea.js" defer></script>
-</head>
-
 <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 text-secondary"><i class="bi bi-shield-lock text-primary me-2"></i>HMAC</h1>
+        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#hmacInfoModal">
+            <i class="bi bi-book"></i> Wat is HMAC?
+        </button>
+    </div>
+
     <div class="row g-4">
         <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-primary text-white">
+            <div class="card shadow-sm h-100 border-primary">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h2 class="h5 mb-0">Create HMAC</h2>
+                    <button type="button" class="btn btn-sm btn-light py-0" onclick="document.getElementById('formHmacCreate').reset();">Clear</button>
                 </div>
                 <div class="card-body">
-                    <form asp-action="CreateHmac" method="post">
+                    <form asp-action="CreateHmac" method="post" id="formHmacCreate">
                         <div class="mb-3">
-                            <label asp-for="key" class="form-label fw-bold">Geheime Key</label>
-                            <input required asp-for="key" class="form-control" placeholder="Enter key...">
+                            <label asp-for="key" class="form-label fw-bold">
+                                Geheime Key <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="De gedeelde geheime sleutel tussen de zender en ontvanger."></i>
+                            </label>
+                            <input required asp-for="key" class="form-control font-monospace" placeholder="Enter key...">
                         </div>
                         <div class="mb-3">
                             <label asp-for="Message" class="form-label fw-bold">Bericht</label>
-                            <textarea required asp-for="Message" class="form-control" rows="2"></textarea>
+                            <textarea required asp-for="Message" class="form-control" rows="3"></textarea>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label asp-for="HmacType" class="form-label fw-bold">Hash Type</label>
                             <select required asp-for="HmacType" class="form-select">
-                                <option value="@HmacType.HMACSHA256">HMACSHA256</option>
+                                <option value="@HmacType.HMACSHA256" selected>HMACSHA256</option>
                                 <option value="@HmacType.HMACSHA384">HMACSHA384</option>
                                 <option value="@HmacType.HMACSHA512">HMACSHA512</option>
                             </select>
                         </div>
-                        @Html.Hidden("Hex", "‎‎ ");
-                        <button type="submit" class="btn btn-primary w-100">Genereer Hash</button>
+                        @Html.Hidden("Hex", "‎‎ ")
+                        <button type="submit" class="btn btn-primary w-100 btn-loading">
+                            <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                            Genereer Hash
+                        </button>
                     </form>
 
                     @if (ViewBag.hex != null)
                     {
-                        <div class="mt-4 p-3 bg-light border rounded">
-                            <label class="form-label fw-bold text-muted small">Genereerde Hash:</label>
-                            <textarea disabled Id="Output" class="d-block text-break w-100 h-50">@ViewBag.hex</textarea>
-                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="CopyToClipboard('Output')">
+                        <div class="mt-4 p-3 bg-light border border-primary rounded">
+                            <label class="form-label fw-bold text-primary small">Gegenereerde HMAC (Hex):</label>
+                            <textarea disabled Id="Output" class="form-control font-monospace mb-2 text-break" rows="2">@ViewBag.hex</textarea>
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="copyAndDeselect('Output')">
                                 <i class="bi bi-clipboard"></i> Kopieer naar klembord
                             </button>
                         </div>
@@ -58,52 +61,83 @@
 
         <div class="col-md-6">
             <div class="card shadow-sm h-100 border-info">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
                     <h2 class="h5 mb-0">Verify HMAC</h2>
+                    <button type="button" class="btn btn-sm btn-light py-0" onclick="document.getElementById('formHmacVerify').reset();">Clear</button>
                 </div>
                 <div class="card-body">
-                    <form asp-action="VerifyHmac" method="post">
+                    <form asp-action="VerifyHmac" method="post" id="formHmacVerify">
                         <div class="mb-3">
                             <label asp-for="Hex" class="form-label fw-bold">Hash om te verifiëren (Hex)</label>
-                            <textarea required asp-for="Hex" class="form-control" rows="2" placeholder="Paste hash here..."></textarea>
+                            <textarea required asp-for="Hex" class="form-control font-monospace border-info" rows="2" placeholder="Paste hash here..."></textarea>
                         </div>
                         <div class="mb-3">
                             <label asp-for="key" class="form-label fw-bold">Geheime Key</label>
-                            <input required asp-for="key" class="form-control">
+                            <input required asp-for="key" class="form-control font-monospace border-info">
                         </div>
                         <div class="mb-3">
-                            <label asp-for="Message" class="form-label fw-bold">Origineel</label>
-                            <textarea required asp-for="Message" class="form-control" rows="2"></textarea>
+                            <label asp-for="Message" class="form-label fw-bold">Origineel Bericht</label>
+                            <textarea required asp-for="Message" class="form-control border-info" rows="3"></textarea>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label asp-for="HmacType" class="form-label fw-bold">Hash Type</label>
                             <select required asp-for="HmacType" class="form-select">
-                                <option value="@HmacType.HMACSHA256">HMACSHA256</option>
+                                <option value="@HmacType.HMACSHA256" selected>HMACSHA256</option>
                                 <option value="@HmacType.HMACSHA384">HMACSHA384</option>
                                 <option value="@HmacType.HMACSHA512">HMACSHA512</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-info text-white w-100">verifeer</button>
+                        <button type="submit" class="btn btn-info text-white w-100 btn-loading">
+                            <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                            Verifieer
+                        </button>
                     </form>
+
+                    @if (ViewBag.Result != null)
+                    {
+                        <div class="mt-4 p-3 alert @(ViewBag.Result == "Hmac klopt!" ? "alert-success border-success" : "alert-danger border-danger") shadow-sm">
+                            <i class="bi @(ViewBag.Result == "Hmac klopt!" ? "bi-check-circle-fill" : "bi-x-circle-fill") me-2"></i>
+                            <strong>@ViewBag.Result</strong>
+                        </div>
+                    }
                 </div>
-                @if (ViewBag.Result != null)
-                {
-                    @if (ViewBag.Result == "Hmac klopt!")
-                    {
-                        <div class="alert alert-success mt-3 fw-bold">@ViewBag.Result</div>
-                    }
-
-                    else
-                    {
-                        <div class="alert alert-danger mt-3 fw-bold">@ViewBag.Result</div>
-                    }
-
-
-                }
             </div>
         </div>
     </div>
-
-    
     <div asp-validation-summary="All" class="mt-4 alert alert-danger @(ViewData.ModelState.IsValid ? "d-none" : "")"></div>
 </div>
+
+<div class="modal fade" id="hmacInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title"><i class="bi bi-book text-info me-2"></i>Wat is HMAC?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>HMAC (Hash-based Message Authentication Code)</strong> combineert een cryptografische hashfunctie met een geheime sleutel.</p>
+                <ul>
+                    <li>In tegenstelling tot een normale hash, kan een HMAC alleen worden gemaakt én geverifieerd door iemand die de geheime sleutel bezit.</li>
+                    <li>Dit garandeert niet alleen dat de data niet is aangepast (Integriteit), maar ook dat deze daadwerkelijk afkomstig is van de verwachte afzender (Authenticiteit).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/CopyFromTextArea.js"></script>
+    <script>
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if(this.checkValidity()) {
+                    let btn = this.querySelector('.btn-loading');
+                    if(btn) {
+                        btn.querySelector('.spinner-border').classList.remove('d-none');
+                        btn.disabled = true;
+                    }
+                }
+            });
+        });
+    </script>
+}

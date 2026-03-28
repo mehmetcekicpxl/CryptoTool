@@ -34,7 +34,9 @@ namespace CryptoTool.Controllers
             }
             catch (Exception ex)
             {
-                ViewBag.Error = "Fout: " + ex.Message;
+                Console.WriteLine($"[Encryption Error] Encrypt failed: {ex.Message}");
+
+                ViewBag.Error = "Er is een fout opgetreden bij het versleutelen. Controleer of de invoer correct is.";
             }
 
            
@@ -62,7 +64,9 @@ namespace CryptoTool.Controllers
             }
             catch (Exception ex)
             {
-                ViewBag.DecryptError = "Fout bij ontsleutelen. Controleer uw sleutel, IV en modus.";
+                Console.WriteLine($"[Encryption Error] Decrypt failed: {ex.Message}");
+
+                ViewBag.Error = "Fout bij ontsleutelen. Controleer uw sleutel, IV en modus.";
             }
 
             ViewBag.CipherTextInput = cipherText;
@@ -106,7 +110,8 @@ namespace CryptoTool.Controllers
             }
             catch (Exception ex)
             {
-                ViewBag.Error = "Fout bij bestand versleuteling: " + ex.Message;
+                Console.WriteLine($"[Encryption Error] File Encrypt failed: {ex.Message}");
+                ViewBag.Error = "Fout bij bestand versleuteling. Controleer of de bestandsgrootte en sleutels kloppen.";
                 return View("Index");
             }
         }
@@ -143,9 +148,10 @@ namespace CryptoTool.Controllers
 
                 return File(decryptedBytes, "application/octet-stream", fileName);
             }
-            catch (Exception )
+            catch (Exception ex)
             {
-                ViewBag.Error = "Fout bij bestand ontsleuteling. Controleer de sleutel!";
+                Console.WriteLine($"[Encryption Error] File Decrypt failed: {ex.Message}");
+                ViewBag.Error = "Fout bij bestand ontsleuteling. Controleer de sleutel en het IV!";
                 return View("Index");
             }
         }

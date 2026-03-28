@@ -1,0 +1,205 @@
+﻿@using CryptoTool.ViewModels.Advanced
+@model AdvancedPageViewModel
+@{
+    ViewData["Title"] = "Advanced Features";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+        <h1 class="h3 text-secondary"><i class="bi bi-cpu-fill text-primary me-2"></i>Advanced Cryptography</h1>
+        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#advancedInfoModal">
+            <i class="bi bi-book"></i> Wat is PBKDF2?
+        </button>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100 border-success">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0"><i class="bi bi-key-fill me-2"></i>Secure Password Generator</h2>
+                    <button type="button" class="btn btn-sm btn-light py-0" onclick="document.getElementById('pwdForm').reset();">Clear</button>
+                </div>
+                <div class="card-body">
+                    <form asp-action="GeneratePassword" method="post" id="pwdForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Wachtwoord Lengte: <span id="lengthDisplay">@Model.PasswordModel.PwdLength</span></label>
+                            <input type="range" class="form-range" asp-for="PasswordModel.PwdLength" min="8" max="64" oninput="document.getElementById('lengthDisplay').innerText = this.value">
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" asp-for="PasswordModel.UseNumbers">
+                            <label class="form-check-label" asp-for="PasswordModel.UseNumbers">Inclusief Cijfers (0-9)</label>
+                        </div>
+                        <div class="form-check form-switch mb-4">
+                            <input class="form-check-input" type="checkbox" asp-for="PasswordModel.UseSymbols">
+                            <label class="form-check-label" asp-for="PasswordModel.UseSymbols">Inclusief Speciale Tekens (!@@#$%^&*)</label>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 btn-loading">
+                            <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                            Genereer Wachtwoord
+                        </button>
+                    </form>
+
+                    @if (Model.PasswordModel.PasswordError != null)
+                    {
+                        <div class="alert alert-danger mt-3">@Model.PasswordModel.PasswordError</div>
+                    }
+
+                    @if (Model.PasswordModel.GeneratedPassword != null)
+                    {
+                        <div class="mt-4 p-3 bg-light border border-success rounded">
+                            <label class="form-label fw-bold text-success small">Gegenereerd Wachtwoord:</label>
+                            <textarea id="pwdOutput" class="form-control font-monospace mb-2 fs-5 text-center" rows="2" readonly>@Model.PasswordModel.GeneratedPassword</textarea>
+                            <button type="button" class="btn btn-sm btn-outline-success w-100" onclick="copyAndDeselect('pwdOutput')">
+                                <i class="bi bi-clipboard"></i> Kopieer Wachtwoord
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100 border-primary">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0"><i class="bi bi-funnel-fill me-2"></i>PBKDF2 Key Derivation</h2>
+                    <button type="button" class="btn btn-sm btn-light py-0" onclick="document.getElementById('pbkdf2Form').reset();">Clear</button>
+                </div>
+                <div class="card-body">
+                    <form asp-action="DeriveKey" method="post" id="pbkdf2Form">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Master Wachtwoord <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="Het wachtwoord dat je wilt omzetten naar een AES-sleutel."></i></label>
+                            <input required type="text" asp-for="Pbkdf2Model.InputPassword" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Salt (Base64) <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="Willekeurige data om rainbow-table aanvallen te voorkomen."></i></label>
+                            <input required type="text" asp-for="Pbkdf2Model.InputSalt" class="form-control font-monospace" placeholder="Bijv: dGhpcyBpcyBhIHNhbHQ=">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Iteraties <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="Hoe hoger, hoe veiliger tegen brute-force, maar hoe langzamer het genereren."></i></label>
+                            <input required type="number" asp-for="Pbkdf2Model.InputIterations" class="form-control" min="10000" max="500000">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 btn-loading">
+                            <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                            Derive 256-bit Key
+                        </button>
+                    </form>
+
+                    @if (Model.Pbkdf2Model.DeriveError != null)
+                    {
+                        <div class="alert alert-danger mt-3">@Model.Pbkdf2Model.DeriveError</div>
+                    }
+
+                    @if (Model.Pbkdf2Model.DerivedKey != null)
+                    {
+                        <div class="mt-4 p-3 bg-light border border-primary rounded">
+                            <label class="form-label fw-bold text-primary small">Derived AES Key (Base64):</label>
+                            <textarea id="keyOutput" class="form-control font-monospace mb-2 text-break" rows="2" readonly>@Model.Pbkdf2Model.DerivedKey</textarea>
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="copyAndDeselect('keyOutput')">
+                                <i class="bi bi-clipboard"></i> Kopieer Sleutel
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4 mb-5">
+        <div class="col-12">
+            <div class="card shadow-sm border-dark">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0"><i class="bi bi-diagram-3-fill me-2"></i>Hybrid Encryption Flow (AES + RSA)</h2>
+                    <button type="button" class="btn btn-sm btn-light py-0" onclick="document.getElementById('hybridForm').reset();">Clear</button>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 border-end">
+                            <form asp-action="HybridEncrypt" method="post" id="hybridForm">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">1. Te versleutelen bericht (Groot)</label>
+                                    <textarea required asp-for="HybridModel.HybridInputMessage" class="form-control" rows="4" placeholder="Typ hier de tekst die je met AES wilt versleutelen..."></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">2. RSA Public Key van ontvanger</label>
+                                    <textarea required asp-for="HybridModel.HybridPublicKey" class="form-control font-monospace" rows="4" placeholder="-----BEGIN PUBLIC KEY-----..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-dark w-100 btn-loading">
+                                    <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                                    Start Hybrid Encryption
+                                </button>
+                            </form>
+                            @if (Model.HybridModel.HybridError != null)
+                            {
+                                <div class="alert alert-danger mt-3">@Model.HybridModel.HybridError</div>
+                            }
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-muted mb-3">Resultaat (Te verzenden naar ontvanger):</h6>
+                            @if (Model.HybridModel.HybridEncryptedMessage != null)
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-success">AES Versleutelde Data:</label>
+                                    <textarea class="form-control font-monospace text-muted" rows="2" readonly>@Model.HybridModel.HybridEncryptedMessage</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-danger">RSA Versleutelde AES-Sleutel:</label>
+                                    <textarea class="form-control font-monospace text-muted" rows="2" readonly>@Model.HybridModel.HybridEncryptedSessionKey</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-primary">AES IV (Initialization Vector):</label>
+                                    <input type="text" class="form-control font-monospace text-muted" readonly value="@Model.HybridModel.HybridIv">
+                                </div>
+                                <div class="alert alert-info py-2 small">
+                                    <i class="bi bi-info-circle me-1"></i> De ontvanger gebruikt zijn RSA Private Key om de AES-sleutel te ontcijferen, en gebruikt die AES-sleutel (+ IV) vervolgens om de grote data te ontcijferen!
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center text-muted mt-5">
+                                    <i class="bi bi-arrow-left-circle fs-1"></i>
+                                    <p class="mt-2">Vul de velden in en klik op encrypt om het hybride resultaat te zien.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="advancedInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title"><i class="bi bi-book text-info me-2"></i>Advanced Features</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>PBKDF2 (Password-Based Key Derivation Function 2)</strong></p>
+                <ul>
+                    <li>Mensen kunnen geen complexe AES-sleutels van 256-bit onthouden. Ze gebruiken liever wachtwoorden.</li>
+                    <li>PBKDF2 pakt een menselijk wachtwoord, gooit er een "Salt" (willekeurige ruis) bij, en hasht het duizenden keren achter elkaar (Iteraties).</li>
+                    <li>Het resultaat is een extreem sterke cryptografische sleutel die veilig gebruikt kan worden voor AES-encryptie. Het maakt brute-force aanvallen nagenoeg onmogelijk.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/CopyFromTextArea.js"></script>
+    <script>
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if(this.checkValidity()) {
+                    let btn = this.querySelector('.btn-loading');
+                    if(btn) {
+                        btn.querySelector('.spinner-border').classList.remove('d-none');
+                        btn.disabled = true;
+                    }
+                }
+            });
+        });
+    </script>
+}

@@ -5,52 +5,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CryptoTool</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CryptoTool.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body class="bg-light d-flex flex-column min-vh-100">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CryptoTool</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-4">
+            <div class="container">
+                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-shield-lock me-1"></i> CryptoTool
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="KeyGenerator" asp-action="Index">KeyGenerator</a>
+                            <a class="nav-link" asp-area="" asp-controller="KeyGenerator" asp-action="Index">Key Generator</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Encryption" asp-action="Index">Encryption</a>
+                            <a class="nav-link" asp-area="" asp-controller="Encryption" asp-action="Index">AES Encryption</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="RsaEncryption" asp-action="Index">RsaEncryption</a>
+                            <a class="nav-link" asp-area="" asp-controller="RsaEncryption" asp-action="Index">RSA Encryption</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Hashing" asp-action="Index">Hashing</a>
+                            <a class="nav-link" asp-area="" asp-controller="Hashing" asp-action="Index">Hashing</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Advanced" asp-action="Index">Advanced</a>
                         </li>
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
+
+    <div class="container flex-grow-1">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - CryptoTool - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="border-top footer text-muted bg-white py-3 mt-auto position-static">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center">
+            <div>
+                &copy; 2026 - CryptoTool - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
+            </div>
+            <div>
+                <span class="me-2 fw-bold">Security Resources:</span>
+                <a href="https://csrc.nist.gov/" target="_blank" class="text-decoration-none me-3">
+                    <i class="bi bi-box-arrow-up-right"></i> NIST
+                </a>
+                <a href="https://owasp.org/" target="_blank" class="text-decoration-none">
+                    <i class="bi bi-box-arrow-up-right"></i> OWASP
+                </a>
+            </div>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+            // Add keyboard shortcuts globally
+        document.addEventListener('keydown', function(event) {
+            // Check if Ctrl + Enter is pressed
+            if (event.ctrlKey && event.key === 'Enter') {
+                // Find the closest form to the currently focused element
+                const activeElement = document.activeElement;
+                const form = activeElement.closest('form');
+
+                // If a form is found, find its submit button and click it
+                if (form) {
+                    const submitBtn = form.querySelector('[type="submit"]');
+                    if (submitBtn && !submitBtn.disabled) {
+                        submitBtn.click();
+                    }
+                }
+            }
+        });
+
+        // Log unhandled UI errors to the console
+        window.addEventListener('error', function (e) {
+            console.error("UI Error Intercepted:", e.error ? e.error.message : e.message);
+        });
+
+        // Log unhandled promise rejections (e.g. failed fetch requests)
+        window.addEventListener('unhandledrejection', function (e) {
+            console.error("Promise Rejected:", e.reason);
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

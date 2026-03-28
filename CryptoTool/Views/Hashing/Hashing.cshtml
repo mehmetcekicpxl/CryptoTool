@@ -1,49 +1,63 @@
 ﻿@using Encryptie_H4.Models.Hashing
 @using System.Security.Authentication
 @model HashingModel
-
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
 @{
+    ViewData["Title"] = "Hashing Tool";
 }
 
-<head>
-    <script src="~/js/CopyFromTextArea.js" defer></script>
-</head>
-
 <div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 text-secondary"><i class="bi bi-hash text-primary me-2"></i>Data Hashing</h1>
+        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#hashInfoModal">
+            <i class="bi bi-book"></i> Wat is Hashing?
+        </button>
+    </div>
+
+    <div class="alert alert-warning d-flex align-items-center mb-4 shadow-sm" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-3 fs-3"></i>
+        <div>
+            <strong>Security Notice:</strong> MD5 en SHA1 zijn <span class="badge bg-danger">Deprecated</span>. Ze zijn kwetsbaar voor collision attacks. Gebruik deze algoritmes uitsluitend voor educatieve doeleinden. Gebruik SHA256 of hoger voor productieomgevingen.
+        </div>
+    </div>
+
     <div class="row g-4">
         <div class="col-md-6">
             <div class="card shadow-sm h-100 border-primary">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="h5 mb-0">Hash Text</h2>
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <span class="fw-bold"><i class="bi bi-gear-fill me-1"></i>Genereer Hash</span>
+                    <button type="button" class="btn btn-sm btn-light py-0" onclick="document.getElementById('formGenerateHash').reset(); document.getElementById('hashOutputContainer').classList.add('d-none');">Clear</button>
                 </div>
                 <div class="card-body">
-                    <form asp-action="HashText" method="post">
+                    <form asp-action="HashText" method="post" id="formGenerateHash">
                         <div class="mb-3">
-                            <label asp-for="Message" class="form-label fw-bold">Bericht</label>
-                            <textarea required asp-for="Message" class="form-control border-primary" rows="4" placeholder="Enter bericht om te hashen"></textarea>
+                            <label asp-for="Message" class="form-label fw-bold">
+                                Input Bericht <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="De data waarvan je een unieke vingerafdruk (hash) wilt maken."></i>
+                            </label>
+                            <textarea required asp-for="Message" class="form-control" rows="4" placeholder="Enter bericht om te hashen"></textarea>
                         </div>
-                        <div class="mb-3">
-                            <label asp-for="HashingType" class="form-label fw-bold">Hash type</label>
+                        <div class="mb-4">
+                            <label asp-for="HashingType" class="form-label fw-bold">Hash Algoritme</label>
                             <select required asp-for="HashingType" class="form-select">
-                                <option value="@HashAlgorithmType.Md5">MD5 (Legacy)</option>
+                                <option value="@HashAlgorithmType.Md5">MD5 (Insecure / Legacy)</option>
                                 <option value="@HashAlgorithmType.Sha1">SHA1 (Weak)</option>
-                                <option value="@HashAlgorithmType.Sha256">SHA256 (Recommended)</option>
+                                <option value="@HashAlgorithmType.Sha256" selected>SHA256 (Recommended)</option>
                                 <option value="@HashAlgorithmType.Sha384">SHA384</option>
                                 <option value="@HashAlgorithmType.Sha512">SHA512</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 shadow-sm">Genereer Hash</button>
+                        <button type="submit" class="btn btn-primary w-100 shadow-sm btn-loading">
+                            <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                            <span>Genereer Hash</span>
+                        </button>
                     </form>
 
                     @if (ViewBag.hex != null)
                     {
-                        <div class="mt-4 p-3 bg-light border border-primary rounded">
-                            <label class="form-label fw-bold text-primary small">Resulting Hash:</label>
+                        <div class="mt-4 p-3 bg-light border border-primary rounded" id="hashOutputContainer">
+                            <label class="form-label fw-bold text-primary small">Resulting Hash (Digest):</label>
                             <textarea id="hashOutput" class="form-control font-monospace mb-2" rows="2" readonly>@ViewBag.hex</textarea>
-                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="CopyToClipboard('hashOutput')">
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="copyAndDeselect('hashOutput')">
                                 <i class="bi bi-clipboard"></i> Kopieer naar klembord
                             </button>
                         </div>
@@ -51,44 +65,88 @@
                 </div>
             </div>
         </div>
+
         <div class="col-md-6">
             <div class="card shadow-sm h-100 border-info">
-                <div class="card-header bg-info text-white">
-                    <h2 class="h5 mb-0">Verify Integrity</h2>
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <span class="fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Verify Integrity</span>
+                    <button type="button" class="btn btn-sm btn-light py-0" onclick="document.getElementById('formVerifyHash').reset();">Clear</button>
                 </div>
                 <div class="card-body">
-                    <form asp-action="VerifyHex" method="post">
+                    <form asp-action="VerifyHex" method="post" id="formVerifyHash">
                         <div class="mb-3">
-                            <label asp-for="Hex" class="form-label fw-bold">Hash to Compare</label>
-                            <textarea required asp-for="Hex" class="form-control border-info" rows="2" placeholder="Paste hex hash..."></textarea>
+                            <label asp-for="Hex" class="form-label fw-bold">
+                                Hash to Compare <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="De hashwaarde die je hebt ontvangen en wilt controleren."></i>
+                            </label>
+                            <textarea required asp-for="Hex" class="form-control" rows="2" placeholder="Paste hex hash..."></textarea>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="Message" class="form-label fw-bold">Original Message</label>
-                            <textarea required asp-for="Message" class="form-control border-info" rows="3"></textarea>
+                            <label asp-for="Message" class="form-label fw-bold">
+                                Original Message <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" title="Het bericht dat bij de hash zou moeten horen. Er wordt een nieuwe hash hiervan berekend om te vergelijken."></i>
+                            </label>
+                            <textarea required asp-for="Message" class="form-control" rows="3"></textarea>
                         </div>
-                        <div class="mb-3">
-                            <label asp-for="HashingType" class="form-label fw-bold">Algorithm</label>
+                        <div class="mb-4">
+                            <label asp-for="HashingType" class="form-label fw-bold">Algoritme</label>
                             <select required asp-for="HashingType" class="form-select">
                                 <option value="@HashAlgorithmType.Md5">MD5</option>
                                 <option value="@HashAlgorithmType.Sha1">SHA1</option>
-                                <option value="@HashAlgorithmType.Sha256">SHA256</option>
+                                <option value="@HashAlgorithmType.Sha256" selected>SHA256</option>
                                 <option value="@HashAlgorithmType.Sha384">SHA384</option>
                                 <option value="@HashAlgorithmType.Sha512">SHA512</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-info text-white w-100 shadow-sm">Verify Match</button>
+                        <button type="submit" class="btn btn-info text-white w-100 shadow-sm btn-loading">
+                            <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                            <span>Verify Match</span>
+                        </button>
                     </form>
 
                     @if (ViewBag.Status != null)
                     {
-                        <div class="mt-3 alert @(ViewBag.Status.ToString().Contains("Hash klopt!") ? "alert-success" : "alert-danger") shadow-sm">
-                            <strong>Status:</strong> @ViewBag.Status
+                        <div class="mt-4 p-3 alert @(ViewBag.Status.ToString().Contains("Hash klopt!") ? "alert-success border-success" : "alert-danger border-danger") shadow-sm">
+                            <i class="bi @(ViewBag.Status.ToString().Contains("Hash klopt!") ? "bi-check-circle-fill" : "bi-x-circle-fill") me-2"></i>
+                            <strong>Resultaat:</strong> @ViewBag.Status
                         </div>
                     }
                 </div>
             </div>
         </div>
     </div>
-
-    <div asp-validation-summary="All" class="mt-4 alert alert-danger @(ViewData.ModelState.IsValid ? "d-none" : "")"></div>
 </div>
+
+<div class="modal fade" id="hashInfoModal" tabindex="-1" aria-labelledby="hashInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="hashInfoModalLabel"><i class="bi bi-book text-info me-2"></i>Wat is Hashing?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Hashing zet willekeurige data om in een unieke tekenreeks (een 'digest') van een vaste lengte.</p>
+                <ul>
+                    <li><strong>Eenrichtingsverkeer:</strong> Je kunt een hash onmogelijk weer terugrekenen naar de originele data. Het is dus *geen* encryptie!</li>
+                    <li><strong>Integriteit:</strong> Zelfs als er 1 komma in een document verandert, wordt de hash volledig anders. Hierdoor is het ideaal om te controleren of bestanden niet zijn aangepast.</li>
+                    <li><strong>Gebruik:</strong> Wordt veel gebruikt voor het veilig opslaan van wachtwoorden in databases en het verifiëren van bestanden.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/CopyFromTextArea.js"></script>
+    <script>
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if(this.checkValidity()) {
+                    let btn = this.querySelector('.btn-loading');
+                    if(btn) {
+                        btn.querySelector('.spinner-border').classList.remove('d-none');
+                        btn.disabled = true;
+                    }
+                }
+            });
+        });
+    </script>
+}

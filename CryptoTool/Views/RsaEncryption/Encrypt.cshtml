@@ -1,48 +1,70 @@
 ﻿@using Encryptie_H4.Models.RsaEncryption
 @model KeyAndMessage
-@*
-
-*@
 @{
+    ViewData["Title"] = "RSA Encryptie";
 }
 
-<head>
-    <script src="~/js/CopyFromTextArea.js" defer></script>
-</head>
-
 <div class="container mt-4">
-    <div class="row g-4">
 
+    <div class="alert alert-danger d-flex align-items-center mb-4 shadow-sm" role="alert">
+        <i class="bi bi-shield-fill-exclamation me-3 fs-3"></i>
+        <div>
+            <h4 class="alert-heading mb-1">Security Warning</h4>
+            <strong>Never share your private key.</strong> De privé sleutel is strikt persoonlijk. Zodra iemand anders deze heeft, kunnen zij al jouw versleutelde berichten lezen.
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 text-secondary">RSA Tool</h1>
+        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#rsaInfoModal">
+            <i class="bi bi-book"></i> Wat is RSA?
+        </button>
+    </div>
+
+    <div class="row g-4">
         <div class="col-md-6">
             <div class="card shadow-sm h-100 border-primary">
                 <div class="card-header bg-primary text-white">
-                    <h2 class="h5 mb-0">Bericht Versleutelen</h2>
+                    <h2 class="h5 mb-0"><i class="bi bi-lock-fill me-2"></i>Bericht Versleutelen</h2>
                 </div>
                 <div class="card-body">
-                    <form asp-action="EncryptMessage" method="post">
+                    <form asp-action="EncryptMessage" method="post" id="encryptForm">
                         <div class="mb-3">
-                            <label asp-for="Message" class="form-label fw-bold">Te versleutelen bericht</label>
+                            <label asp-for="Message" class="form-label fw-bold">
+                                Te versleutelen bericht
+                                <i class="bi bi-info-circle ms-1 text-muted" data-bs-toggle="tooltip" title="De leesbare tekst (plaintext) die je veilig wilt versturen."></i>
+                            </label>
                             <textarea required asp-for="Message" class="form-control" rows="3" placeholder="Typ hier je bericht..."></textarea>
+                            <span asp-validation-for="Message" class="text-danger small"></span>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="PublicKey" class="form-label fw-bold">Publieke Sleutel (Public Key)</label>
+                            <label asp-for="PublicKey" class="form-label fw-bold">
+                                Publieke Sleutel (Public Key)
+                                <i class="bi bi-info-circle ms-1 text-muted" data-bs-toggle="tooltip" title="De sleutel die vrij gedeeld mag worden. Hiermee kan data alleen versleuteld worden, niet ontsleuteld."></i>
+                            </label>
                             <textarea required asp-for="PublicKey" class="form-control font-monospace" rows="4" placeholder="Plak de publieke sleutel hier..."></textarea>
+                            <span asp-validation-for="PublicKey" class="text-danger small"></span>
                         </div>
 
                         @Html.Hidden("PrivateKey", "NA")
                         @Html.Hidden("EncryptedMessage", "NA")
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary flex-grow-1">Versleutelen</button>
+                            <button type="submit" class="btn btn-primary flex-grow-1" id="btnEncrypt">
+                                <span class="spinner-border spinner-border-sm d-none me-2" id="spinnerEncrypt" role="status"></span>
+                                <span id="textEncrypt">Versleutelen</span>
+                            </button>
                         </div>
                     </form>
 
                     @if (Model.EncryptedMessage != "NA" && !string.IsNullOrEmpty(Model.EncryptedMessage))
                     {
-                        <div class="mt-4 p-3 bg-light border rounded">
-                            <label class="form-label fw-bold text-primary small">Versleuteld Bericht:</label>
+                        <div class="mt-4 p-3 bg-light border rounded border-primary">
+                            <label class="form-label fw-bold text-primary small">Versleuteld Bericht (Ciphertext):</label>
                             <textarea id="encOut" class="form-control font-monospace mb-2" rows="3" readonly>@Model.EncryptedMessage</textarea>
-                            <button type="button" class="btn btn-sm btn-link p-0" onclick="copyAndDeselect('encOut')">Kopieer resultaat</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="copyAndDeselect('encOut')">
+                                <i class="bi bi-clipboard"></i> Kopieer resultaat
+                            </button>
                         </div>
                     }
                 </div>
@@ -52,36 +74,40 @@
         <div class="col-md-6">
             <div class="card shadow-sm h-100 border-info">
                 <div class="card-header bg-info text-white">
-                    <h2 class="h5 mb-0">Bericht Ontsleutelen</h2>
+                    <h2 class="h5 mb-0"><i class="bi bi-unlock-fill me-2"></i>Bericht Ontsleutelen</h2>
                 </div>
                 <div class="card-body">
-                    <form asp-action="DecryptMessage" method="post">
+                    <form asp-action="DecryptMessage" method="post" id="decryptForm">
                         <div class="mb-3">
-                            <label asp-for="EncryptedMessage" class="form-label fw-bold">Versleuteld Bericht (Ciphertext)</label>
+                            <label asp-for="EncryptedMessage" class="form-label fw-bold">
+                                Versleuteld Bericht (Ciphertext)
+                                <i class="bi bi-info-circle ms-1 text-muted" data-bs-toggle="tooltip" title="De onleesbare, versleutelde data die ontsleuteld moet worden."></i>
+                            </label>
                             <textarea required asp-for="EncryptedMessage" class="form-control" rows="3" placeholder="Plak het versleutelde bericht..."></textarea>
+                            <span asp-validation-for="EncryptedMessage" class="text-danger small"></span>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="PrivateKey" class="form-label fw-bold">Privé Sleutel (Private Key)</label>
+                            <label asp-for="PrivateKey" class="form-label fw-bold">
+                                Privé Sleutel (Private Key)
+                                <i class="bi bi-info-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Jouw geheime sleutel. Deze is wiskundig gekoppeld aan de publieke sleutel en nodig om het bericht te lezen."></i>
+                            </label>
                             <textarea required asp-for="PrivateKey" class="form-control font-monospace" rows="4" placeholder="Plak de privé sleutel hier..."></textarea>
+                            <span asp-validation-for="PrivateKey" class="text-danger small"></span>
                         </div>
 
                         @Html.Hidden("PublicKey", "NA")
                         @Html.Hidden("Message", "NA")
 
-                        <button type="submit" class="btn btn-info text-white w-100 shadow-sm">Ontsleutelen</button>
+                        <button type="submit" class="btn btn-info text-white w-100 shadow-sm" id="btnDecrypt">
+                            <span class="spinner-border spinner-border-sm d-none me-2" id="spinnerDecrypt" role="status"></span>
+                            <span id="textDecrypt">Ontsleutelen</span>
+                        </button>
                     </form>
 
-                    @if (ViewData.ModelState.IsValid && string.IsNullOrEmpty(Model.Message) == false)
+                    @if (ViewData.ModelState.IsValid && !string.IsNullOrEmpty(Model.Message) && Model.Message != "NA")
                     {
-                        <div class="mt-4 p-3  border rounded">
-                            <label class="form-label fw-bold small">Ontsleuteld Bericht:</label>
-                            <p class="mb-0 p-2 bg-white border rounded">@Model.Message</p>
-                        </div>
-                    }
-                    else if(string.IsNullOrEmpty(Model.Message) == false)
-                    {
-                        <div class="mt-4 p-3  border rounded">
-                            <label class="form-label fw-bold small">Ontsleuteld Bericht:</label>
+                        <div class="mt-4 p-3 border rounded border-info bg-light">
+                            <label class="form-label fw-bold small text-info">Ontsleuteld Bericht (Plaintext):</label>
                             <p class="mb-0 p-2 bg-white border rounded">@Model.Message</p>
                         </div>
                     }
@@ -93,6 +119,43 @@
     <div asp-validation-summary="All" class="mt-4 alert alert-danger @(ViewData.ModelState.IsValid ? "d-none" : "")"></div>
 </div>
 
+<div class="modal fade" id="rsaInfoModal" tabindex="-1" aria-labelledby="rsaInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="rsaInfoModalLabel"><i class="bi bi-book text-info me-2"></i>Wat is RSA?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>RSA (Rivest-Shamir-Adleman)</strong> is een vorm van asymmetrische cryptografie.</p>
+                <ul>
+                    <li><strong>Asymmetrisch:</strong> Er worden twee verschillende sleutels gebruikt.</li>
+                    <li><strong>Publieke Sleutel:</strong> Iedereen mag deze hebben. Hiermee wordt een bericht versleuteld.</li>
+                    <li><strong>Privé Sleutel:</strong> Alleen de ontvanger heeft deze. Hiermee wordt het bericht ontsleuteld.</li>
+                </ul>
+                <p class="mb-0 text-muted small">Gebruik RSA voornamelijk voor het beveiligen van kleine hoeveelheden data, zoals het uitwisselen van AES-sleutels, vanwege de intensieve rekenkracht die het vereist.</p>
+            </div>
+        </div>
+    </div>
+</div>
 
+@section Scripts {
+    <script src="~/js/CopyFromTextArea.js"></script>
+    <script>
+        document.getElementById('encryptForm').addEventListener('submit', function (e) {
+            if (this.checkValidity()) {
+                document.getElementById('spinnerEncrypt').classList.remove('d-none');
+                document.getElementById('textEncrypt').textContent = 'Bezig met versleutelen...';
+                document.getElementById('btnEncrypt').disabled = true;
+            }
+        });
 
-
+        document.getElementById('decryptForm').addEventListener('submit', function (e) {
+            if (this.checkValidity()) {
+                document.getElementById('spinnerDecrypt').classList.remove('d-none');
+                document.getElementById('textDecrypt').textContent = 'Bezig met ontsleutelen...';
+                document.getElementById('btnDecrypt').disabled = true;
+            }
+        });
+    </script>
+}

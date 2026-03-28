@@ -1,10 +1,15 @@
-﻿<h1>Encryption navigation</h1>
-
-<ul class="nav flex-column gap-2 w-25">
-    <li class="nav-item d-grid">
-        <a class="btn btn-outline-primary" asp-area="" asp-controller="RsaEncryption" asp-action="Encrypt">Encrypt</a>
-    </li>
-    <li class="nav-item d-grid">
-        <a class="btn btn-outline-primary" asp-area="" asp-controller="RsaEncryption" asp-action="Signature">Signature</a>
-    </li>
-</ul>
+﻿<div class="container mt-4">
+    <h2 class="h4 mb-4 border-bottom pb-2"><i class="bi bi-compass me-2"></i>RSA Navigatie</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="d-grid gap-3">
+                <a class="btn btn-outline-primary btn-lg text-start shadow-sm" asp-area="" asp-controller="RsaEncryption" asp-action="Encrypt">
+                    <i class="bi bi-shield-lock me-2"></i> Encryptie & Decryptie
+                </a>
+                <a class="btn btn-outline-primary btn-lg text-start shadow-sm" asp-area="" asp-controller="RsaEncryption" asp-action="Signature">
+                    <i class="bi bi-pen me-2"></i> Digitale Handtekening
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

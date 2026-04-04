@@ -136,6 +136,51 @@
         </div>
     </div>
 </div>
+<hr class="my-5" />
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="text-secondary"><i class="bi bi-hdd-network me-2"></i>Key Management (Local Storage)</h3>
+    <span class="badge bg-danger fs-6">Unencrypted</span>
+</div>
+
+<div class="alert alert-warning shadow-sm">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Let op:</strong> Deze versie slaat sleutels onversleuteld op in de browser (`localStorage`).
+</div>
+
+<div class="row g-4 mt-2 mb-5">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100 border-dark">
+            <div class="card-header bg-dark text-white fw-bold"><i class="bi bi-save me-2"></i>Opslaan & Roteren</div>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <button class="btn btn-primary w-100 mb-3" onclick="keyManager.saveKeys(false)">Huidige Keys Opslaan</button>
+                <button class="btn btn-warning w-100" onclick="keyManager.saveKeys(true)">Rotate Key (Toevoegen als nieuw)</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100 border-info">
+            <div class="card-header bg-info text-white fw-bold"><i class="bi bi-arrow-clockwise me-2"></i>Inladen & Wissen</div>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <button class="btn btn-info text-white w-100 mb-3" onclick="keyManager.loadLatestKeys()">Laad Laatste Keys (Console)</button>
+                <button class="btn btn-outline-danger w-100" onclick="keyManager.clearVault()">Wis Lokale Opslag</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100 border-secondary">
+            <div class="card-header bg-secondary text-white fw-bold"><i class="bi bi-file-earmark-arrow-up me-2"></i>Import / Export</div>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <button class="btn btn-dark w-100 mb-3" onclick="keyManager.exportVault()">Exporteer Opslag (.json)</button>
+                <div class="input-group">
+                    <input type="file" id="importFile" class="form-control" accept=".json">
+                    <button class="btn btn-secondary" onclick="keyManager.importVault()">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         document.querySelectorAll('form').forEach(form => {
@@ -149,5 +194,110 @@
                 }
             });
         });
+        const keyManager = {
+            storageKey: 'cryptoTool_unencrypted_keys',
+
+            saveKeys: function(isRotation) {
+                // Grabs the generated keys directly from the server-side ViewBag using Razor syntax
+                // This prevents us from having to rely on specific HTML input IDs
+                const aesKey = '@ViewBag.AesKeyBase64';
+                const aesIv = '@ViewBag.AesIVBase64';
+
+                // Uses Html.Raw and escaping to safely inject multiline RSA PEM strings
+                const rsaPub = `@Html.Raw(ViewBag.RsaPublicKey?.Replace("`", "\\`"))`;
+                const rsaPriv = `@Html.Raw(ViewBag.RsaPrivateKey?.Replace("`", "\\`"))`;
+
+                if (!aesKey && !rsaPub) {
+                    alert("Er zijn geen gegenereerde sleutels op deze pagina om op te slaan! Genereer eerst een AES of RSA sleutel.");
+                    return;
+                }
+
+                // Creates the data object to store
+                const newEntry = {
+                    timestamp: new Date().toLocaleString(),
+                    aesKey: aesKey,
+                    aesIv: aesIv,
+                    rsaPublicKey: rsaPub,
+                    rsaPrivateKey: rsaPriv
+                };
+
+                // Retrieves existing history or starts a new array
+                let history = JSON.parse(localStorage.getItem(this.storageKey) || "[]");
+
+                if (isRotation) {
+                    history.push(newEntry); // Key rotation: keeps old keys, appends new one
+                } else {
+                    history = [newEntry]; // Standard save: overwrites everything
+                }
+
+                localStorage.setItem(this.storageKey, JSON.stringify(history));
+                alert(isRotation ? "Sleutels geroteerd en toegevoegd aan geschiedenis!" : "Sleutels overschreven en opgeslagen!");
+            },
+
+            loadLatestKeys: function() {
+                const history = JSON.parse(localStorage.getItem(this.storageKey) || "[]");
+                if (history.length === 0) {
+                    alert("Geen sleutels gevonden in de lokale opslag.");
+                    return;
+                }
+
+                // Gets the most recently added key
+                const latest = history[history.length - 1];
+
+                console.log("=== GELADEN SLEUTELS UIT LOCAL STORAGE ===");
+                console.log(latest);
+                alert(`Sleutels geladen! Kijk in de browser console (F12) om de waarden te zien. Er zitten ${history.length} versies in je opslag.`);
+            },
+
+            clearVault: function() {
+                if(confirm("Weet je zeker dat je alle lokaal opgeslagen sleutels wilt wissen? Dit kan niet ongedaan worden gemaakt.")) {
+                    localStorage.removeItem(this.storageKey);
+                    alert("Lokale opslag is gewist.");
+                }
+            },
+
+            exportVault: function() {
+                const data = localStorage.getItem(this.storageKey);
+                if (!data || data === "[]") {
+                    alert("De opslag is leeg, niets om te exporteren.");
+                    return;
+                }
+
+                // Creates a downloadable JSON file from the local storage string
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'CryptoTool_Keys_Backup.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            },
+
+            importVault: function() {
+                const fileInput = document.getElementById('importFile');
+                if (!fileInput.files.length) {
+                    alert("Kies eerst een .json bestand om te importeren.");
+                    return;
+                }
+
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                // Reads the file asynchronously without blocking the UI
+                reader.onload = function(e) {
+                    try {
+                        JSON.parse(e.target.result); // Validates if the file is actually JSON
+                        localStorage.setItem(keyManager.storageKey, e.target.result);
+                        alert("Sleutelkluis succesvol geïmporteerd!");
+                        fileInput.value = ""; // Resets the file input
+                    } catch (err) {
+                        alert("Fout: Het geïmporteerde bestand is geen geldige JSON.");
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
     </script>
 }

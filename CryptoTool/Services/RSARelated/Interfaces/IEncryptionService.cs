@@ -10,5 +10,7 @@ namespace Encryptie_H4.Services.RSARelated.Interfaces
         public RsaEncryptionResult DecryptKey(string encrypteData, string privateKey);
         public KeyCollection GenerateKeys();
         public KeyCollection GetKeys();
+        public RsaEncryptionResult SignFile(Stream stream, string privateKeyPem);
+        public RsaEncryptionResult VerifyFileSignature(Stream fileStream, string signature, string publicKey);
     }
 }

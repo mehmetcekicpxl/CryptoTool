@@ -260,7 +260,76 @@ namespace Encryptie_H4.Controllers
             
         }
 
+        [HttpPost]
+        public IActionResult SignFile(IFormFile fileToSign, string rsaPrivateKey)
+        {
+            if (fileToSign == null || fileToSign.Length == 0)
+            {
+                ModelState.AddModelError("", "Selecteer een geldig bestand om te ondertekenen.");
+                return View("Signature", new SignatureAndMessage()); // Of jullie specifieke ViewModel
+            }
 
+            try
+            {
+                // Opens a read stream so we don't load a 2GB file entirely into RAM
+                using Stream fileStream = fileToSign.OpenReadStream();
+                RsaEncryptionResult result = _encryptionService.SignFile(fileStream, rsaPrivateKey);
+
+                if (result.IsSuccesfull)
+                {
+                    ViewBag.FileSignature = result.EncryptiondResult;
+                    ViewBag.FileSuccess = "Bestand succesvol ondertekend!";
+                }
+                else
+                {
+                    foreach (string error in result.GetErrors())
+                    {
+                        ModelState.AddModelError("", error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[RSA Error] File signing failed: {ex.Message}");
+                ModelState.AddModelError("", "Onverwachte fout bij het lezen van het bestand.");
+            }
+
+            return View("Signature", new SignatureAndMessage());
+        }
+
+        [HttpPost]
+        public IActionResult VerifyFile(IFormFile fileToVerify, string signatureToVerify, string rsaPublicKey)
+        {
+            if (fileToVerify == null || fileToVerify.Length == 0)
+            {
+                ModelState.AddModelError("", "Selecteer een bestand om te verifiëren.");
+                return View("Signature", new SignatureAndMessage());
+            }
+
+            try
+            {
+                using Stream fileStream = fileToVerify.OpenReadStream();
+                RsaEncryptionResult result = _encryptionService.VerifyFileSignature(fileStream, signatureToVerify, rsaPublicKey);
+
+                if (result.IsSuccesfull)
+                {
+                    ViewBag.FileVerifyResult = "Handtekening is GELDIG. Het bestand is authentiek en ongewijzigd.";
+                    ViewBag.FileVerifySuccess = true;
+                }
+                else
+                {
+                    ViewBag.FileVerifyResult = "Handtekening is ONGELDIG. Het bestand is mogelijk aangepast of de verkeerde sleutel is gebruikt.";
+                    ViewBag.FileVerifySuccess = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[RSA Error] File verification failed: {ex.Message}");
+                ModelState.AddModelError("", "Fout tijdens verificatie van het bestand.");
+            }
+
+            return View("Signature", new SignatureAndMessage());
+        }
     }
 }
 

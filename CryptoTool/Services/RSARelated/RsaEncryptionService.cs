@@ -193,5 +193,51 @@ namespace Encryptie_H4.Services.RSARelated
         {
             return currentKeys;
         }
+
+        public RsaEncryptionResult SignFile(Stream fileStream, string privateKeyPem)
+        {
+            var result = new RsaEncryptionResult();
+            try
+            {
+                using RSA rsa = RSA.Create();
+                rsa.ImportFromPem(privateKeyPem);
+
+                // Reads the file stream, hashes it using SHA256, and signs the hash with the private key
+                byte[] signatureBytes = rsa.SignData(fileStream, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+
+                result.IsSuccesfull = true;
+                result.EncryptiondResult = Convert.ToBase64String(signatureBytes);
+            }
+            catch (Exception ex)
+            {
+                result.IsSuccesfull = false;
+                // In a real app we log ex.Message, but we return a safe error to the result object
+                result.AddError("Kan het bestand niet ondertekenen. Controleer of de private key geldig is.");
+            }
+            return result;
+        }
+
+        public RsaEncryptionResult VerifyFileSignature(Stream fileStream, string signatureBase64, string publicKeyPem)
+        {
+            var result = new RsaEncryptionResult();
+            try
+            {
+                using RSA rsa = RSA.Create();
+                rsa.ImportFromPem(publicKeyPem);
+
+                byte[] signatureBytes = Convert.FromBase64String(signatureBase64);
+
+                // Hashes the file stream again and verifies if it matches the decrypted signature
+                bool isValid = rsa.VerifyData(fileStream, signatureBytes, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+
+                result.IsSuccesfull = isValid;
+            }
+            catch (Exception)
+            {
+                result.IsSuccesfull = false;
+                result.AddError("Kan de handtekening niet verifiëren. Controleer de public key en de handtekening.");
+            }
+            return result;
+        }
     }
 }
